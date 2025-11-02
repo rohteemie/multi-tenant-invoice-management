@@ -1,6 +1,21 @@
 import { create } from 'zustand';
 import type { Invoice, InvoiceCreate, InvoiceUpdate, InvoiceStatusUpdate } from '../types';
+import { getErrorMessage } from '../types/error';
 import { invoiceService } from '../services';
+
+interface InvoiceQueryParams {
+  status?: string;
+  customer_name?: string;
+  branch_id?: string;
+  skip?: number;
+  limit?: number;
+}
+
+interface InvoiceExportParams {
+  status?: string;
+  customer_name?: string;
+  branch_id?: string;
+}
 
 interface InvoiceState {
   invoices: Invoice[];
@@ -8,13 +23,13 @@ interface InvoiceState {
   isLoading: boolean;
   error: string | null;
   
-  fetchInvoices: (params?: any) => Promise<void>;
+  fetchInvoices: (params?: InvoiceQueryParams) => Promise<void>;
   fetchInvoiceById: (id: string) => Promise<void>;
   createInvoice: (data: InvoiceCreate) => Promise<Invoice>;
   updateInvoice: (id: string, data: InvoiceUpdate) => Promise<Invoice>;
   updateInvoiceStatus: (id: string, data: InvoiceStatusUpdate) => Promise<Invoice>;
   deleteInvoice: (id: string) => Promise<void>;
-  exportInvoices: (format: 'csv' | 'json', params?: any) => Promise<void>;
+  exportInvoices: (format: 'csv' | 'json', params?: InvoiceExportParams) => Promise<void>;
   setError: (error: string | null) => void;
 }
 
@@ -24,13 +39,13 @@ export const useInvoiceStore = create<InvoiceState>((set) => ({
   isLoading: false,
   error: null,
 
-  fetchInvoices: async (params?: any) => {
+  fetchInvoices: async (params?: InvoiceQueryParams) => {
     set({ isLoading: true, error: null });
     try {
       const invoices = await invoiceService.getAll(params);
       set({ invoices, isLoading: false });
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.detail || 'Failed to fetch invoices';
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
       set({ error: errorMessage, isLoading: false });
       throw error;
     }
@@ -41,8 +56,8 @@ export const useInvoiceStore = create<InvoiceState>((set) => ({
     try {
       const invoice = await invoiceService.getById(id);
       set({ currentInvoice: invoice, isLoading: false });
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.detail || 'Failed to fetch invoice';
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
       set({ error: errorMessage, isLoading: false });
       throw error;
     }
@@ -57,8 +72,8 @@ export const useInvoiceStore = create<InvoiceState>((set) => ({
         isLoading: false 
       }));
       return invoice;
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.detail || 'Failed to create invoice';
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
       set({ error: errorMessage, isLoading: false });
       throw error;
     }
@@ -74,8 +89,8 @@ export const useInvoiceStore = create<InvoiceState>((set) => ({
         isLoading: false,
       }));
       return invoice;
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.detail || 'Failed to update invoice';
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
       set({ error: errorMessage, isLoading: false });
       throw error;
     }
@@ -91,8 +106,8 @@ export const useInvoiceStore = create<InvoiceState>((set) => ({
         isLoading: false,
       }));
       return invoice;
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.detail || 'Failed to update invoice status';
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
       set({ error: errorMessage, isLoading: false });
       throw error;
     }
@@ -106,14 +121,14 @@ export const useInvoiceStore = create<InvoiceState>((set) => ({
         invoices: state.invoices.filter((inv) => inv.id !== id),
         isLoading: false,
       }));
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.detail || 'Failed to delete invoice';
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
       set({ error: errorMessage, isLoading: false });
       throw error;
     }
   },
 
-  exportInvoices: async (format: 'csv' | 'json', params?: any) => {
+  exportInvoices: async (format: 'csv' | 'json', params?: InvoiceExportParams) => {
     try {
       const blob = await invoiceService.exportInvoices(format, params);
       const url = window.URL.createObjectURL(blob);
@@ -122,8 +137,8 @@ export const useInvoiceStore = create<InvoiceState>((set) => ({
       link.download = `invoices.${format}`;
       link.click();
       window.URL.revokeObjectURL(url);
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.detail || 'Failed to export invoices';
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
       set({ error: errorMessage });
       throw error;
     }

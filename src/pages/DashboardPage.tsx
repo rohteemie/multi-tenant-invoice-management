@@ -4,6 +4,8 @@ import { analyticsService } from '../services';
 import type { InvoiceSummary, RevenueByStatus } from '../types';
 import { Loading, ErrorMessage } from '../components/common';
 import { useAuthStore } from '../store';
+import { formatCurrency } from '../utils';
+import { getErrorMessage } from '../types/error';
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuthStore();
@@ -21,8 +23,8 @@ export const DashboardPage: React.FC = () => {
         ]);
         setSummary(summaryData);
         setRevenueData(revenueByStatus);
-      } catch (err: any) {
-        setError(err.response?.data?.detail || 'Failed to load analytics');
+      } catch (err: unknown) {
+        setError(getErrorMessage(err));
       } finally {
         setIsLoading(false);
       }
@@ -93,7 +95,7 @@ export const DashboardPage: React.FC = () => {
               <dl>
                 <dt className="text-sm font-medium text-gray-500 truncate">Total Revenue</dt>
                 <dd className="text-lg font-semibold text-gray-900">
-                  ${summary?.total_revenue.toFixed(2) || '0.00'}
+                  ${formatCurrency(summary?.total_revenue)}
                 </dd>
               </dl>
             </div>
@@ -113,7 +115,7 @@ export const DashboardPage: React.FC = () => {
               <dl>
                 <dt className="text-sm font-medium text-gray-500 truncate">Pending Amount</dt>
                 <dd className="text-lg font-semibold text-gray-900">
-                  ${summary?.pending_amount.toFixed(2) || '0.00'}
+                  ${formatCurrency(summary?.pending_amount)}
                 </dd>
               </dl>
             </div>
@@ -133,7 +135,7 @@ export const DashboardPage: React.FC = () => {
               <dl>
                 <dt className="text-sm font-medium text-gray-500 truncate">Overdue</dt>
                 <dd className="text-lg font-semibold text-gray-900">
-                  ${summary?.overdue_amount.toFixed(2) || '0.00'}
+                  ${formatCurrency(summary?.overdue_amount)}
                 </dd>
               </dl>
             </div>
@@ -199,7 +201,7 @@ export const DashboardPage: React.FC = () => {
                     {item.count}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${item.total_amount.toFixed(2)}
+                    ${formatCurrency(item.total_amount)}
                   </td>
                 </tr>
               ))}

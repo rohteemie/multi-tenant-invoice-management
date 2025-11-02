@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { User, Token } from '../types';
+import { getErrorMessage } from '../types/error';
 import { authService, userService } from '../services';
 
 interface AuthState {
@@ -33,8 +34,8 @@ export const useAuthStore = create<AuthState>((set) => ({
         isAuthenticated: true, 
         isLoading: false 
       });
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.detail || 'Login failed';
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
       set({ 
         error: errorMessage, 
         isAuthenticated: false, 

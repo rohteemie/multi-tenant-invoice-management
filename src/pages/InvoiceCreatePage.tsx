@@ -68,7 +68,7 @@ export const InvoiceCreatePage: React.FC = () => {
         items,
       });
       navigate(`/invoices/${invoice.id}`);
-    } catch (err) {
+    } catch {
       // Error is handled in store
     }
   };
