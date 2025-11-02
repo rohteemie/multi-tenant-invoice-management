@@ -4,6 +4,16 @@ import { useInvoiceStore } from '../store';
 import { Loading, ErrorMessage, Button } from '../components/common';
 import { InvoiceStatus } from '../types';
 
+/**
+ * Calculates the total price for an invoice item
+ */
+const calculateItemTotal = (item: { quantity: number | string; unit_price: number | string; total_price?: number | string }): string => {
+  if (item.total_price) {
+    return Number(item.total_price).toFixed(2);
+  }
+  return (Number(item.quantity) * Number(item.unit_price)).toFixed(2);
+};
+
 export const InvoiceDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -201,9 +211,9 @@ export const InvoiceDetailPage: React.FC = () => {
                 <tr key={item.id}>
                   <td className="px-6 py-4 text-sm text-gray-900">{item.description}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">{item.quantity}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900">${item.unit_price.toFixed(2)}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">${Number(item.unit_price).toFixed(2)}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    ${item.total_price?.toFixed(2) || (item.quantity * item.unit_price).toFixed(2)}
+                    ${calculateItemTotal(item)}
                   </td>
                 </tr>
               ))}
@@ -216,19 +226,19 @@ export const InvoiceDetailPage: React.FC = () => {
             <div className="w-64 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Subtotal</span>
-                <span className="text-gray-900">${currentInvoice.subtotal.toFixed(2)}</span>
+                <span className="text-gray-900">${Number(currentInvoice.subtotal).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Tax</span>
-                <span className="text-gray-900">${currentInvoice.tax_amount.toFixed(2)}</span>
+                <span className="text-gray-900">${Number(currentInvoice.tax_amount).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Discount</span>
-                <span className="text-gray-900">-${currentInvoice.discount_amount.toFixed(2)}</span>
+                <span className="text-gray-900">-${Number(currentInvoice.discount_amount).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-lg font-bold border-t pt-2">
                 <span>Total</span>
-                <span>${currentInvoice.total_amount.toFixed(2)}</span>
+                <span>${Number(currentInvoice.total_amount).toFixed(2)}</span>
               </div>
             </div>
           </div>
