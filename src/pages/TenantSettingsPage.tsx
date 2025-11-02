@@ -8,7 +8,7 @@ import type { TenantCreate } from '../types';
 
 export const TenantSettingsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user: currentUser } = useAuthStore();
+  const { user: currentUser, logout } = useAuthStore();
   const { currentTenant, isLoading, error, fetchTenantById, updateTenant, deleteTenant, setError } = useTenantStore();
   
   const [formData, setFormData] = useState<Partial<TenantCreate>>({
@@ -76,7 +76,6 @@ export const TenantSettingsPage: React.FC = () => {
     try {
       await deleteTenant(currentUser.tenant_id);
       // Logout user after deleting tenant using authStore
-      const { logout } = useAuthStore.getState();
       logout();
       navigate('/login');
     } catch {

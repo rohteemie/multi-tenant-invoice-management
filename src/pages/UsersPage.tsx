@@ -69,6 +69,7 @@ export const UsersPage: React.FC = () => {
     }
   };
 
+  // Show loading only on initial load (when users array is empty)
   if (isLoading && users.length === 0) {
     return <Loading size="lg" text="Loading users..." />;
   }
