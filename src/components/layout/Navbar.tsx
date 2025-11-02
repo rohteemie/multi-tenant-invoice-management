@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store';
+import { UserRole } from '../../types';
 
 export const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -17,6 +18,11 @@ export const Navbar: React.FC = () => {
     { path: '/invoices', label: 'Invoices' },
     { path: '/users', label: 'Users' },
   ];
+
+  // Add settings to nav items if user is owner
+  if (user?.role === UserRole.OWNER) {
+    navItems.push({ path: '/settings', label: 'Settings' });
+  }
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 
