@@ -1,13 +1,20 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { userService } from '../services';
 import type { User } from '../types';
+import { UserRole } from '../types';
 import { getErrorMessage } from '../types/error';
 import { Loading, ErrorMessage } from '../components/common';
+import { useAuthStore } from '../store';
 
 export const UsersPage: React.FC = () => {
+  const { user: currentUser } = useAuthStore();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Check if current user can create users
+  const canCreateUsers = currentUser?.role === UserRole.OWNER || currentUser?.role === UserRole.ADMIN;
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -40,6 +47,16 @@ export const UsersPage: React.FC = () => {
             Users
           </h2>
         </div>
+        {canCreateUsers && (
+          <div className="mt-4 flex md:mt-0 md:ml-4">
+            <Link
+              to="/users/create"
+              className="btn-primary"
+            >
+              Register User
+            </Link>
+          </div>
+        )}
       </div>
 
       <div className="card">

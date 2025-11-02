@@ -5,3 +5,4 @@ export * from './InvoiceListPage';
 export * from './InvoiceCreatePage';
 export * from './InvoiceDetailPage';
 export * from './UsersPage';
+export * from './UserCreatePage';

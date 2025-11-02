@@ -8,6 +8,7 @@ import {
   InvoiceCreatePage,
   InvoiceDetailPage,
   UsersPage,
+  UserCreatePage,
 } from './pages';
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
           <Route path="invoices/create" element={<InvoiceCreatePage />} />
           <Route path="invoices/:id" element={<InvoiceDetailPage />} />
           <Route path="users" element={<UsersPage />} />
+          <Route path="users/create" element={<UserCreatePage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
