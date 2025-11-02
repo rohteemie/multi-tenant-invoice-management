@@ -22,11 +22,28 @@ export const InvoiceDetailPage: React.FC = () => {
   const [newStatus, setNewStatus] = useState<InvoiceStatus | ''>('');
   const [paymentMethod, setPaymentMethod] = useState('');
 
+  // Get valid status transitions based on current invoice status
+  const getValidTransitions = (currentStatus: InvoiceStatus): InvoiceStatus[] => {
+    const transitions: Record<InvoiceStatus, InvoiceStatus[]> = {
+      [InvoiceStatus.DRAFT]: [InvoiceStatus.SENT],
+      [InvoiceStatus.SENT]: [InvoiceStatus.PAID, InvoiceStatus.OVERDUE],
+      [InvoiceStatus.OVERDUE]: [InvoiceStatus.PAID],
+      [InvoiceStatus.PAID]: [], // Cannot transition from PAID
+    };
+    return transitions[currentStatus] || [];
+  };
+
   useEffect(() => {
     if (id) {
       fetchInvoiceById(id);
     }
   }, [id]);
+
+  const handleCloseModal = () => {
+    setShowStatusModal(false);
+    setNewStatus('');
+    setPaymentMethod('');
+  };
 
   const handleStatusUpdate = async () => {
     if (!id || !newStatus) return;
@@ -36,9 +53,7 @@ export const InvoiceDetailPage: React.FC = () => {
         status: newStatus,
         payment_method: newStatus === InvoiceStatus.PAID ? paymentMethod : undefined,
       });
-      setShowStatusModal(false);
-      setNewStatus('');
-      setPaymentMethod('');
+      handleCloseModal();
     } catch {
       // Error is handled in store
     }
@@ -281,38 +296,56 @@ export const InvoiceDetailPage: React.FC = () => {
       )}
 
       {/* Status Update Modal */}
-      {showStatusModal && (
+      {showStatusModal && currentInvoice && (
         <div className="fixed z-10 inset-0 overflow-y-auto">
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setShowStatusModal(false)}></div>
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={handleCloseModal}></div>
             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
               <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Update Invoice Status</h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">New Status</label>
-                    <select
-                      value={newStatus}
-                      onChange={(e) => setNewStatus(e.target.value as InvoiceStatus)}
-                      className="mt-1 input-field"
-                    >
-                      <option value="">Select status</option>
-                      <option value={InvoiceStatus.DRAFT}>Draft</option>
-                      <option value={InvoiceStatus.SENT}>Sent</option>
-                      <option value={InvoiceStatus.PAID}>Paid</option>
-                      <option value={InvoiceStatus.OVERDUE}>Overdue</option>
-                    </select>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Current Status: <span className="font-semibold capitalize">{currentInvoice.status}</span>
+                    </label>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">New Status</label>
+                    {getValidTransitions(currentInvoice.status).length === 0 ? (
+                      <p className="text-sm text-gray-500 italic">
+                        No valid status transitions available. Invoice is in final status.
+                      </p>
+                    ) : (
+                      <select
+                        value={newStatus}
+                        onChange={(e) => setNewStatus(e.target.value as InvoiceStatus)}
+                        className="mt-1 input-field"
+                      >
+                        <option value="">Select status</option>
+                        {getValidTransitions(currentInvoice.status).map((status) => (
+                          <option key={status} value={status}>
+                            {status.charAt(0).toUpperCase() + status.slice(1)}
+                          </option>
+                        ))}
+                      </select>
+                    )}
                   </div>
                   {newStatus === InvoiceStatus.PAID && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Payment Method</label>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Payment Method <span className="text-red-500">*</span>
+                      </label>
                       <input
                         type="text"
                         value={paymentMethod}
                         onChange={(e) => setPaymentMethod(e.target.value)}
                         className="mt-1 input-field"
                         placeholder="e.g., Credit Card, Cash, Bank Transfer"
+                        required
                       />
+                      <p className="mt-1 text-xs text-gray-500">
+                        Payment method is required when marking invoice as paid
+                      </p>
                     </div>
                   )}
                 </div>
@@ -323,12 +356,12 @@ export const InvoiceDetailPage: React.FC = () => {
                   variant="primary"
                   className="w-full sm:w-auto sm:ml-3"
                   isLoading={isLoading}
-                  disabled={!newStatus}
+                  disabled={!newStatus || (newStatus === InvoiceStatus.PAID && !paymentMethod)}
                 >
                   Update
                 </Button>
                 <Button
-                  onClick={() => setShowStatusModal(false)}
+                  onClick={handleCloseModal}
                   variant="secondary"
                   className="w-full sm:w-auto mt-3 sm:mt-0"
                 >
