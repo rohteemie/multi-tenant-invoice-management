@@ -16,7 +16,7 @@ export const LoginPage: React.FC = () => {
     try {
       await login(email, password);
       navigate('/dashboard');
-    } catch (err) {
+    } catch {
       // Error is already set in the store
     }
   };

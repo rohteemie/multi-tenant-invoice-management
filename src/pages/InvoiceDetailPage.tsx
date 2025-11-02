@@ -29,7 +29,7 @@ export const InvoiceDetailPage: React.FC = () => {
       setShowStatusModal(false);
       setNewStatus('');
       setPaymentMethod('');
-    } catch (err) {
+    } catch {
       // Error is handled in store
     }
   };
@@ -40,7 +40,7 @@ export const InvoiceDetailPage: React.FC = () => {
       try {
         await deleteInvoice(id);
         navigate('/invoices');
-      } catch (err) {
+      } catch {
         // Error is handled in store
       }
     }

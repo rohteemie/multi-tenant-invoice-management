@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { tenantService } from '../services';
 import { Button, ErrorMessage } from '../components/common';
+import { getErrorMessage } from '../types/error';
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -59,8 +60,8 @@ export const RegisterPage: React.FC = () => {
       setTimeout(() => {
         navigate('/login');
       }, 2000);
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.detail || 'Registration failed';
+    } catch (err: unknown) {
+      const errorMessage = getErrorMessage(err);
       setError(errorMessage);
     } finally {
       setIsLoading(false);

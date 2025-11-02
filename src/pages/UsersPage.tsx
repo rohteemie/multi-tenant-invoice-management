@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { userService } from '../services';
 import type { User } from '../types';
+import { getErrorMessage } from '../types/error';
 import { Loading, ErrorMessage } from '../components/common';
 
 export const UsersPage: React.FC = () => {
@@ -13,8 +14,8 @@ export const UsersPage: React.FC = () => {
       try {
         const data = await userService.getAll();
         setUsers(data);
-      } catch (err: any) {
-        setError(err.response?.data?.detail || 'Failed to fetch users');
+      } catch (err: unknown) {
+        setError(getErrorMessage(err));
       } finally {
         setIsLoading(false);
       }
