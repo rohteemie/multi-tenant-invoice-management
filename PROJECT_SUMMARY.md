@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project is a **complete, production-ready React frontend** for a multi-tenant Invoice Management SaaS application. It was built from scratch to integrate seamlessly with the FastAPI backend at https://github.com/rohteemie/multi-tenant-saas-backend.
+This project is a **complete, production-ready React frontend** for a multi-tenant Invoice Management SaaS application. It was built from scratch to integrate seamlessly with the FastAPI backend at <https://github.com/rohteemie/multi-tenant-saas-backend>.
 
 ## Project Statistics
 
@@ -19,25 +19,30 @@ This project is a **complete, production-ready React frontend** for a multi-tena
 ## Technology Stack
 
 ### Core Technologies
+
 - **React** 18.x - UI library
 - **TypeScript** 5.x - Type safety
 - **Vite** 7.x - Build tool & dev server
 - **Tailwind CSS** 4.x - Styling framework
 
 ### State & Routing
+
 - **Zustand** - State management
 - **React Router** 7.x - Client-side routing
 
 ### API & Data
+
 - **Axios** - HTTP client
 - **JWT** - Authentication tokens
 
 ### Testing
+
 - **Vitest** - Test runner
 - **React Testing Library** - Component testing
 - **@testing-library/jest-dom** - Test utilities
 
 ### Development Tools
+
 - **ESLint** - Code linting
 - **PostCSS** - CSS processing
 - **Autoprefixer** - CSS vendor prefixes
@@ -45,6 +50,7 @@ This project is a **complete, production-ready React frontend** for a multi-tena
 ## Features Implemented
 
 ### 1. Authentication System
+
 - User login with JWT tokens
 - Automatic token refresh
 - Secure logout
@@ -52,11 +58,13 @@ This project is a **complete, production-ready React frontend** for a multi-tena
 - Persistent authentication state
 
 ### 2. Tenant Management
+
 - Organization registration
 - Owner account creation
 - Multi-tenant isolation
 
 ### 3. Invoice Management
+
 - **Create**: Multi-item invoices with customer details
 - **Read**: List view with filters, detail view
 - **Update**: Edit draft invoices, update status
@@ -64,6 +72,7 @@ This project is a **complete, production-ready React frontend** for a multi-tena
 - **Export**: CSV and JSON export functionality
 
 ### 4. Analytics Dashboard
+
 - Total invoices count
 - Revenue tracking (total, pending, overdue)
 - Status breakdown (Draft, Sent, Paid, Overdue)
@@ -71,11 +80,13 @@ This project is a **complete, production-ready React frontend** for a multi-tena
 - Quick action shortcuts
 
 ### 5. User Management
+
 - View organization users
 - Display user roles (Owner, Admin, Manager, Attendant)
 - Show user status and details
 
 ### 6. UI/UX Features
+
 - Responsive mobile-first design
 - Loading states
 - Error handling with user-friendly messages
@@ -85,7 +96,7 @@ This project is a **complete, production-ready React frontend** for a multi-tena
 
 ## Project Structure
 
-```
+```bash
 multi-tenant-invoice-management/
 ├── src/
 │   ├── components/
@@ -142,16 +153,19 @@ multi-tenant-invoice-management/
 ## API Endpoints Integrated
 
 ### Authentication
+
 - POST `/auth/login` - User authentication
 - POST `/auth/register` - User registration
 - POST `/auth/refresh` - Token refresh
 
 ### Tenants
+
 - POST `/tenants/register` - Organization registration
 - GET `/tenants` - List tenants
 - GET `/tenants/{id}` - Get tenant details
 
 ### Invoices
+
 - GET `/invoices/` - List invoices (with filters)
 - POST `/invoices/` - Create invoice
 - GET `/invoices/{id}` - Get invoice details
@@ -161,10 +175,12 @@ multi-tenant-invoice-management/
 - GET `/invoices/export/invoices` - Export invoices
 
 ### Analytics
+
 - GET `/analytics/invoice-summary` - Get summary stats
 - GET `/analytics/revenue-by-status` - Get revenue breakdown
 
 ### Users
+
 - GET `/users/me` - Get current user
 - GET `/users` - List users
 - GET `/users/{id}` - Get user details
@@ -172,26 +188,32 @@ multi-tenant-invoice-management/
 ## Key Design Decisions
 
 ### 1. State Management
+
 **Choice**: Zustand over Redux
 **Reason**: Simpler API, less boilerplate, better TypeScript support
 
 ### 2. Styling
+
 **Choice**: Tailwind CSS v4
 **Reason**: Utility-first approach, rapid development, consistent design
 
 ### 3. Type System
+
 **Choice**: Strict TypeScript
 **Reason**: Catch errors early, better IDE support, self-documenting code
 
 ### 4. Build Tool
+
 **Choice**: Vite over Create React App
 **Reason**: Faster builds, better DX, modern tooling
 
 ### 5. Routing
+
 **Choice**: React Router v7
 **Reason**: Industry standard, feature-rich, well-maintained
 
 ### 6. API Client
+
 **Choice**: Axios over fetch
 **Reason**: Better error handling, interceptors, automatic JSON parsing
 
@@ -218,11 +240,13 @@ multi-tenant-invoice-management/
 ## Testing Strategy
 
 ### Current Coverage
+
 - Component tests (Button)
 - Type constant tests
 - Setup with Vitest and React Testing Library
 
 ### Testing Commands
+
 ```bash
 npm run test          # Run all tests
 npm run test:ui       # Run tests with UI
@@ -232,17 +256,20 @@ npm run test:coverage # Generate coverage report
 ## Build & Deployment
 
 ### Build Process
+
 ```bash
 npm run build
 ```
 
 Produces optimized production build in `dist/` directory:
+
 - Minified JavaScript
 - Optimized CSS
 - Asset optimization
 - Tree-shaking
 
 ### Deployment Options
+
 - ✅ Vercel (recommended)
 - ✅ Netlify
 - ✅ GitHub Pages
@@ -255,11 +282,13 @@ See DEPLOYMENT.md for detailed instructions.
 ## Environment Configuration
 
 ### Development
+
 ```env
 VITE_API_BASE_URL=http://localhost:8000/api/v1
 ```
 
 ### Production
+
 ```env
 VITE_API_BASE_URL=http://3.86.89.25:8000/api/v1
 ```
@@ -319,16 +348,27 @@ While the project is complete and production-ready, potential enhancements inclu
 ## Success Criteria Met
 
 ✅ Complete frontend implementation
+
 ✅ All API endpoints integrated
+
 ✅ Authentication and authorization working
+
 ✅ Multi-tenant support
+
 ✅ Responsive design
+
 ✅ Type-safe codebase
+
 ✅ Test suite included
+
 ✅ Comprehensive documentation
+
 ✅ Ready for production deployment
+
 ✅ Best practices followed
+
 ✅ No security vulnerabilities
+
 ✅ Clean, maintainable code
 
 ## Conclusion
@@ -348,6 +388,9 @@ The application is ready to be deployed and used in production environments.
 ---
 
 **Project Status**: ✅ **COMPLETE**
+
 **Production Ready**: ✅ **YES**
+
 **Documentation**: ✅ **COMPREHENSIVE**
+
 **Quality**: ✅ **HIGH**

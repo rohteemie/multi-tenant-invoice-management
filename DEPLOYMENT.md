@@ -13,11 +13,13 @@ This guide covers deploying the Multi-Tenant Invoice Management frontend to vari
 Before deploying, ensure your `.env` file has the correct API base URL:
 
 **Production:**
+
 ```env
 VITE_API_BASE_URL=http://3.86.89.25:8000/api/v1
 ```
 
 **Local Development:**
+
 ```env
 VITE_API_BASE_URL=http://localhost:8000/api/v1
 ```
@@ -102,11 +104,22 @@ netlify deploy --prod
 ### 3. GitHub Pages
 
 1. Install gh-pages package:
+
 ```bash
 npm install -D gh-pages
 ```
 
 2. Update `package.json`:
+
+```json
+{
+  "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
+  }
+}
+```
+
 ```json
 {
   "scripts": {
@@ -117,19 +130,23 @@ npm install -D gh-pages
 ```
 
 3. Update `vite.config.ts`:
+
 ```typescript
 export default defineConfig({
   plugins: [react()],
   base: '/multi-tenant-invoice-management/'  // Your repository name
 })
+
 ```
 
 4. Deploy:
+
 ```bash
 npm run deploy
 ```
 
 5. Enable GitHub Pages in repository settings:
+
    - Go to Settings → Pages
    - Select `gh-pages` branch
    - Save
@@ -137,26 +154,31 @@ npm run deploy
 ### 4. AWS S3 + CloudFront
 
 1. Build the project:
+
 ```bash
 npm run build
 ```
 
 2. Create an S3 bucket:
+
 ```bash
 aws s3 mb s3://invoice-management-frontend
 ```
 
 3. Upload the build:
+
 ```bash
 aws s3 sync dist/ s3://invoice-management-frontend
 ```
 
 4. Configure bucket for static website hosting:
+
    - Enable static website hosting
    - Set index document to `index.html`
    - Set error document to `index.html` (for SPA routing)
 
 5. Create CloudFront distribution:
+
    - Origin: Your S3 bucket
    - Default root object: `index.html`
    - Error pages: Redirect 404 to `/index.html` with 200 status
@@ -216,11 +238,13 @@ docker run -p 80:80 invoice-management-frontend
 ### 6. Azure Static Web Apps
 
 1. Install Azure Static Web Apps CLI:
+
 ```bash
 npm install -g @azure/static-web-apps-cli
 ```
 
 2. Create a `staticwebapp.config.json`:
+
 ```json
 {
   "navigationFallback": {
@@ -263,6 +287,7 @@ Remember to set these environment variables in your deployment platform:
 For production deployments, always use HTTPS. Most platforms (Vercel, Netlify) provide automatic SSL certificates.
 
 For custom domains:
+
 1. Add your custom domain in the platform settings
 2. Update DNS records as instructed
 3. Wait for SSL certificate provisioning (usually automatic)
@@ -270,6 +295,7 @@ For custom domains:
 ## Monitoring and Analytics
 
 Consider adding:
+
 - Google Analytics for usage tracking
 - Sentry for error tracking
 - Performance monitoring tools
@@ -277,20 +303,24 @@ Consider adding:
 ## Troubleshooting
 
 ### Build Fails
+
 - Check Node.js version (18+)
 - Clear `node_modules` and reinstall: `rm -rf node_modules && npm install`
 - Check for TypeScript errors: `npm run build`
 
 ### API Calls Fail
+
 - Verify `VITE_API_BASE_URL` is set correctly
 - Check CORS settings on the backend
 - Verify the backend is running and accessible
 
 ### Routing Issues (404 on refresh)
+
 - Ensure your server is configured for SPA routing
 - All routes should redirect to `index.html`
 
 ### Environment Variables Not Working
+
 - Ensure variables are prefixed with `VITE_`
 - Rebuild after changing environment variables
 - Check platform-specific environment variable configuration
@@ -356,10 +386,12 @@ jobs:
 ## Support
 
 For issues related to deployment:
+
 - Check platform-specific documentation
 - Review deployment logs
 - Contact platform support
 
 For application issues:
+
 - Open an issue on GitHub
 - Check the README for common problems
