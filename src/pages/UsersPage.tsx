@@ -10,6 +10,7 @@ export const UsersPage: React.FC = () => {
   const { user: currentUser } = useAuthStore();
   const { users, isLoading, error, fetchUsers, updateUser, deleteUser, setError } = useUserStore();
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [editFormData, setEditFormData] = useState<UserUpdate>({});
 
@@ -52,12 +53,19 @@ export const UsersPage: React.FC = () => {
       return;
     }
 
-    if (window.confirm(`Are you sure you want to delete ${user.full_name}? This will deactivate their account.`)) {
-      try {
-        await deleteUser(user.id);
-      } catch {
-        // Error is handled in store
-      }
+    setSelectedUser(user);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedUser) return;
+
+    try {
+      await deleteUser(selectedUser.id);
+      setShowDeleteConfirm(false);
+      setSelectedUser(null);
+    } catch {
+      // Error is handled in store
     }
   };
 
@@ -260,6 +268,54 @@ export const UsersPage: React.FC = () => {
                   </Button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && selectedUser && (
+        <div className="fixed z-10 inset-0 overflow-y-auto">
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setShowDeleteConfirm(false)}></div>
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900">
+                      Delete User
+                    </h3>
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-500">
+                        Are you sure you want to delete {selectedUser.full_name}? This will deactivate their account.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <Button
+                  onClick={handleDeleteConfirm}
+                  variant="danger"
+                  className="w-full sm:w-auto sm:ml-3"
+                  isLoading={isLoading}
+                >
+                  Delete User
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full sm:w-auto mt-3 sm:mt-0"
+                  onClick={() => setShowDeleteConfirm(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
             </div>
           </div>
         </div>
