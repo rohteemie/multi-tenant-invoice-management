@@ -103,9 +103,14 @@ export const InvoiceDetailPage: React.FC = () => {
             Update Status
           </Button>
           {currentInvoice.status === InvoiceStatus.DRAFT && (
-            <Button variant="danger" onClick={handleDelete}>
-              Delete
-            </Button>
+            <>
+              <Button variant="primary" onClick={() => navigate(`/invoices/${id}/edit`)}>
+                Edit
+              </Button>
+              <Button variant="danger" onClick={handleDelete}>
+                Delete
+              </Button>
+            </>
           )}
         </div>
       </div>

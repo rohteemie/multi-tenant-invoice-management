@@ -1,42 +1,77 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { userService } from '../services';
-import type { User } from '../types';
+import { useUserStore } from '../store';
+import type { User, UserUpdate } from '../types';
 import { UserRole } from '../types';
-import { getErrorMessage } from '../types/error';
-import { Loading, ErrorMessage } from '../components/common';
+import { Loading, ErrorMessage, Button } from '../components/common';
 import { useAuthStore } from '../store';
 
 export const UsersPage: React.FC = () => {
   const { user: currentUser } = useAuthStore();
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { users, isLoading, error, fetchUsers, updateUser, deleteUser, setError } = useUserStore();
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [editFormData, setEditFormData] = useState<UserUpdate>({});
 
-  // Check if current user can create users
-  const canCreateUsers = currentUser?.role === UserRole.OWNER || currentUser?.role === UserRole.ADMIN;
+  // Check if current user can manage users
+  const canManageUsers = currentUser?.role === UserRole.OWNER || currentUser?.role === UserRole.ADMIN;
+  const isOwner = currentUser?.role === UserRole.OWNER;
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const data = await userService.getAll();
-        setUsers(data);
-      } catch (err: unknown) {
-        setError(getErrorMessage(err));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchUsers();
   }, []);
 
-  if (isLoading) {
-    return <Loading size="lg" text="Loading users..." />;
-  }
+  const handleEditClick = (user: User) => {
+    setSelectedUser(user);
+    setEditFormData({
+      full_name: user.full_name,
+      role: user.role,
+      is_active: user.is_active,
+      is_verified: user.is_verified,
+    });
+    setShowEditModal(true);
+  };
 
-  if (error) {
-    return <ErrorMessage message={error} />;
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUser) return;
+
+    try {
+      await updateUser(selectedUser.id, editFormData);
+      setShowEditModal(false);
+      setSelectedUser(null);
+      setEditFormData({});
+    } catch {
+      // Error is handled in store
+    }
+  };
+
+  const handleDelete = async (user: User) => {
+    if (user.id === currentUser?.id) {
+      setError('Cannot delete your own account');
+      return;
+    }
+
+    setSelectedUser(user);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedUser) return;
+
+    try {
+      await deleteUser(selectedUser.id);
+      setShowDeleteConfirm(false);
+      setSelectedUser(null);
+    } catch {
+      // Error is handled in store
+    }
+  };
+
+  // Show loading only on initial load (when users array is empty)
+  if (isLoading && users.length === 0) {
+    return <Loading size="lg" text="Loading users..." />;
   }
 
   return (
@@ -47,7 +82,7 @@ export const UsersPage: React.FC = () => {
             Users
           </h2>
         </div>
-        {canCreateUsers && (
+        {canManageUsers && (
           <div className="mt-4 flex md:mt-0 md:ml-4">
             <Link
               to="/users/create"
@@ -58,6 +93,8 @@ export const UsersPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {error && <ErrorMessage message={error} onDismiss={() => setError(null)} />}
 
       <div className="card">
         <div className="overflow-x-auto">
@@ -79,12 +116,17 @@ export const UsersPage: React.FC = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Created At
                 </th>
+                {canManageUsers && (
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-sm text-gray-500">
+                  <td colSpan={canManageUsers ? 6 : 5} className="px-6 py-4 text-center text-sm text-gray-500">
                     No users found.
                   </td>
                 </tr>
@@ -116,6 +158,28 @@ export const UsersPage: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(user.created_at).toLocaleDateString()}
                     </td>
+                    {canManageUsers && (
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex justify-end space-x-2">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => handleEditClick(user)}
+                          >
+                            Edit
+                          </Button>
+                          {isOwner && user.id !== currentUser?.id && (
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              onClick={() => handleDelete(user)}
+                            >
+                              Delete
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))
               )}
@@ -123,6 +187,140 @@ export const UsersPage: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* Edit User Modal */}
+      {showEditModal && selectedUser && (
+        <div className="fixed z-10 inset-0 overflow-y-auto">
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setShowEditModal(false)}></div>
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <form onSubmit={handleEditSubmit}>
+                <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Edit User: {selectedUser.full_name}</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                      <input
+                        type="text"
+                        value={editFormData.full_name || ''}
+                        onChange={(e) => setEditFormData({ ...editFormData, full_name: e.target.value })}
+                        className="mt-1 input-field"
+                        required
+                      />
+                    </div>
+                    {canManageUsers && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Role</label>
+                        <select
+                          value={editFormData.role || ''}
+                          onChange={(e) => setEditFormData({ ...editFormData, role: e.target.value as UserRole })}
+                          className="mt-1 input-field"
+                          required
+                        >
+                          <option value={UserRole.ATTENDANT}>Attendant</option>
+                          <option value={UserRole.MANAGER}>Manager</option>
+                          <option value={UserRole.ADMIN}>Admin</option>
+                          {isOwner && <option value={UserRole.OWNER}>Owner</option>}
+                        </select>
+                      </div>
+                    )}
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="is_active"
+                        checked={editFormData.is_active ?? false}
+                        onChange={(e) => setEditFormData({ ...editFormData, is_active: e.target.checked })}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="is_active" className="ml-2 block text-sm text-gray-900">
+                        Active
+                      </label>
+                    </div>
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="is_verified"
+                        checked={editFormData.is_verified ?? false}
+                        onChange={(e) => setEditFormData({ ...editFormData, is_verified: e.target.checked })}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      />
+                      <label htmlFor="is_verified" className="ml-2 block text-sm text-gray-900">
+                        Verified
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    className="w-full sm:w-auto sm:ml-3"
+                    isLoading={isLoading}
+                  >
+                    Update User
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="w-full sm:w-auto mt-3 sm:mt-0"
+                    onClick={() => setShowEditModal(false)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && selectedUser && (
+        <div className="fixed z-10 inset-0 overflow-y-auto">
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setShowDeleteConfirm(false)}></div>
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900">
+                      Delete User
+                    </h3>
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-500">
+                        Are you sure you want to delete {selectedUser.full_name}? This will deactivate their account.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <Button
+                  onClick={handleDeleteConfirm}
+                  variant="danger"
+                  className="w-full sm:w-auto sm:ml-3"
+                  isLoading={isLoading}
+                >
+                  Delete User
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full sm:w-auto mt-3 sm:mt-0"
+                  onClick={() => setShowDeleteConfirm(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
