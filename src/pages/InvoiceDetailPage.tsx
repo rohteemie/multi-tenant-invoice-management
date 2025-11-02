@@ -4,6 +4,16 @@ import { useInvoiceStore } from '../store';
 import { Loading, ErrorMessage, Button } from '../components/common';
 import { InvoiceStatus } from '../types';
 
+/**
+ * Calculates the total price for an invoice item
+ */
+const calculateItemTotal = (item: { quantity: number | string; unit_price: number | string; total_price?: number | string }): string => {
+  if (item.total_price) {
+    return Number(item.total_price).toFixed(2);
+  }
+  return (Number(item.quantity) * Number(item.unit_price)).toFixed(2);
+};
+
 export const InvoiceDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -203,7 +213,7 @@ export const InvoiceDetailPage: React.FC = () => {
                   <td className="px-6 py-4 text-sm text-gray-900">{item.quantity}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">${Number(item.unit_price).toFixed(2)}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    ${item.total_price ? Number(item.total_price).toFixed(2) : (Number(item.quantity) * Number(item.unit_price)).toFixed(2)}
+                    ${calculateItemTotal(item)}
                   </td>
                 </tr>
               ))}

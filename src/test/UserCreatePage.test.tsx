@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { UserCreatePage } from '../pages/UserCreatePage';
 import { useAuthStore } from '../store';
 import { UserRole } from '../types';
+import type { User } from '../types';
 
 // Mock the auth store
 vi.mock('../store', () => ({
@@ -21,26 +22,31 @@ const renderWithRouter = (component: React.ReactElement) => {
   return render(<BrowserRouter>{component}</BrowserRouter>);
 };
 
+// Helper function to mock auth store with user
+const mockAuthStore = (user: User | null) => {
+  (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({ user });
+};
+
+// Helper to create a test user
+const createTestUser = (role: UserRole): User => ({
+  id: '1',
+  email: `${role}@test.com`,
+  full_name: `Test ${role}`,
+  role,
+  tenant_id: 'tenant-1',
+  is_active: true,
+  is_verified: true,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+});
+
 describe('UserCreatePage Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('shows access denied for users without permission', () => {
-    // Mock a manager user (no permission to create users)
-    (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-      user: {
-        id: '1',
-        email: 'manager@test.com',
-        full_name: 'Test Manager',
-        role: UserRole.MANAGER,
-        tenant_id: 'tenant-1',
-        is_active: true,
-        is_verified: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-    });
+    mockAuthStore(createTestUser(UserRole.MANAGER));
 
     renderWithRouter(<UserCreatePage />);
     expect(screen.getByText('Access Denied')).toBeInTheDocument();
@@ -48,20 +54,7 @@ describe('UserCreatePage Component', () => {
   });
 
   it('shows registration form for owner', () => {
-    // Mock an owner user
-    (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-      user: {
-        id: '1',
-        email: 'owner@test.com',
-        full_name: 'Test Owner',
-        role: UserRole.OWNER,
-        tenant_id: 'tenant-1',
-        is_active: true,
-        is_verified: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-    });
+    mockAuthStore(createTestUser(UserRole.OWNER));
 
     renderWithRouter(<UserCreatePage />);
     expect(screen.getByText('Register New User')).toBeInTheDocument();
@@ -72,20 +65,7 @@ describe('UserCreatePage Component', () => {
   });
 
   it('shows registration form for admin', () => {
-    // Mock an admin user
-    (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-      user: {
-        id: '1',
-        email: 'admin@test.com',
-        full_name: 'Test Admin',
-        role: UserRole.ADMIN,
-        tenant_id: 'tenant-1',
-        is_active: true,
-        is_verified: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-    });
+    mockAuthStore(createTestUser(UserRole.ADMIN));
 
     renderWithRouter(<UserCreatePage />);
     expect(screen.getByText('Register New User')).toBeInTheDocument();
@@ -93,20 +73,7 @@ describe('UserCreatePage Component', () => {
   });
 
   it('includes owner role option only for owner users', () => {
-    // Mock an owner user
-    (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-      user: {
-        id: '1',
-        email: 'owner@test.com',
-        full_name: 'Test Owner',
-        role: UserRole.OWNER,
-        tenant_id: 'tenant-1',
-        is_active: true,
-        is_verified: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-    });
+    mockAuthStore(createTestUser(UserRole.OWNER));
 
     renderWithRouter(<UserCreatePage />);
     const roleSelect = screen.getByLabelText(/^Role/) as HTMLSelectElement;
@@ -115,20 +82,7 @@ describe('UserCreatePage Component', () => {
   });
 
   it('does not include owner role option for admin users', () => {
-    // Mock an admin user
-    (useAuthStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-      user: {
-        id: '1',
-        email: 'admin@test.com',
-        full_name: 'Test Admin',
-        role: UserRole.ADMIN,
-        tenant_id: 'tenant-1',
-        is_active: true,
-        is_verified: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-    });
+    mockAuthStore(createTestUser(UserRole.ADMIN));
 
     renderWithRouter(<UserCreatePage />);
     const roleSelect = screen.getByLabelText(/^Role/) as HTMLSelectElement;
