@@ -27,12 +27,19 @@ valid_transitions = {
 
 ## Solution Implemented
 
-### 1. Status Transition Validation Function
+### 1. Shared Utility Functions
 
-Added `getValidTransitions()` function in `InvoiceDetailPage.tsx`:
+Created `src/utils/invoiceUtils.ts` with two utility functions:
 
+**`getValidInvoiceStatusTransitions()`**
 ```typescript
-const getValidTransitions = (currentStatus: InvoiceStatus): InvoiceStatus[] => {
+/**
+ * Get valid status transitions based on current invoice status.
+ * This mirrors the backend validation rules from app/api/v1/endpoints/invoices.py
+ */
+export const getValidInvoiceStatusTransitions = (
+  currentStatus: InvoiceStatus
+): InvoiceStatus[] => {
   const transitions: Record<InvoiceStatus, InvoiceStatus[]> = {
     [InvoiceStatus.DRAFT]: [InvoiceStatus.SENT],
     [InvoiceStatus.SENT]: [InvoiceStatus.PAID, InvoiceStatus.OVERDUE],
@@ -40,6 +47,17 @@ const getValidTransitions = (currentStatus: InvoiceStatus): InvoiceStatus[] => {
     [InvoiceStatus.PAID]: [], // Cannot transition from PAID
   };
   return transitions[currentStatus] || [];
+};
+```
+
+**`capitalizeFirstLetter()`**
+```typescript
+/**
+ * Capitalize the first letter of a string
+ */
+export const capitalizeFirstLetter = (text: string): string => {
+  if (!text) return '';
+  return text.charAt(0).toUpperCase() + text.slice(1);
 };
 ```
 
@@ -68,59 +86,71 @@ const handleCloseModal = () => {
 
 ### Comprehensive Test Suite
 
-Created `src/test/InvoiceStatusTransition.test.tsx` with 16 tests covering:
+Created three test files covering all aspects:
 
-1. **DRAFT status transitions**
-   - ✅ Allows transition to SENT
-   - ✅ Blocks direct transition to PAID
-   - ✅ Blocks direct transition to OVERDUE
+1. **`src/test/InvoiceStatusTransition.test.tsx`** - 16 tests
+   - DRAFT status transitions (3 tests)
+   - SENT status transitions (4 tests)
+   - OVERDUE status transitions (3 tests)
+   - PAID status transitions (2 tests)
+   - Complete lifecycle flows (2 tests)
+   - Edge cases (2 tests)
 
-2. **SENT status transitions**
-   - ✅ Allows transition to PAID
-   - ✅ Allows transition to OVERDUE
-   - ✅ Blocks transition back to DRAFT
+2. **`src/test/invoiceUtils.test.ts`** - 10 tests
+   - `getValidInvoiceStatusTransitions()` tests (5 tests)
+   - `capitalizeFirstLetter()` tests (5 tests)
 
-3. **OVERDUE status transitions**
-   - ✅ Allows transition to PAID
-   - ✅ Blocks transition back to SENT
-   - ✅ Blocks transition back to DRAFT
-
-4. **PAID status transitions**
-   - ✅ No transitions allowed (final state)
-
-5. **Complete lifecycle flows**
-   - ✅ DRAFT → SENT → PAID
-   - ✅ DRAFT → SENT → OVERDUE → PAID
+3. **`src/test/crud.operations.test.ts`** - Updated with 1 new test
+   - Test for DRAFT → SENT transition
 
 ### Test Results
 
 ```
-Test Files  7 passed (7)
-Tests       56 passed (56)
+Test Files  8 passed (8)
+Tests       66 passed (66)
 ```
 
-All tests passing, including the 16 new status transition validation tests.
+All tests passing, comprehensive coverage of status transitions and utilities.
 
 ## Files Modified
 
 1. **src/pages/InvoiceDetailPage.tsx**
-   - Added `getValidTransitions()` function
+   - Removed inline `getValidTransitions()` function
+   - Imported and used shared utilities
    - Enhanced status update modal UI
    - Added `handleCloseModal()` helper
    - Improved validation and user feedback
 
-2. **src/test/crud.operations.test.ts**
+2. **src/utils/invoiceUtils.ts** (NEW)
+   - Created shared utility functions
+   - Documented with JSDoc comments
+   - Single source of truth for transition logic
+
+3. **src/utils/index.ts**
+   - Added export for invoice utilities
+
+4. **src/test/InvoiceStatusTransition.test.tsx** (NEW)
+   - Comprehensive status transition validation tests
+   - Updated to use shared utility functions
+
+5. **src/test/invoiceUtils.test.ts** (NEW)
+   - Tests for utility functions
+   - Edge case coverage
+
+6. **src/test/crud.operations.test.ts**
    - Added test for DRAFT → SENT transition
 
-3. **src/test/InvoiceStatusTransition.test.tsx** (NEW)
-   - Comprehensive status transition validation tests
+7. **INVOICE_STATUS_UPDATE_FIX.md** (NEW)
+   - This comprehensive documentation
 
 ## Build & Quality Checks
 
 ✅ **Build**: Successful with no errors
-✅ **Tests**: 56/56 passing
+✅ **Tests**: 66/66 passing
 ✅ **Linter**: Clean (only pre-existing React hook dependency warnings)
 ✅ **TypeScript**: No type errors
+✅ **Security**: 0 vulnerabilities (CodeQL scan passed)
+✅ **Code Review**: All feedback addressed
 
 ## User Experience Improvements
 
@@ -129,6 +159,7 @@ All tests passing, including the 16 new status transition validation tests.
 - No indication of valid transitions
 - Backend errors when invalid transitions attempted
 - Confusing user experience
+- Code duplication between page and tests
 
 ### After
 - Only valid next statuses shown in dropdown
@@ -137,6 +168,8 @@ All tests passing, including the 16 new status transition validation tests.
 - Payment method required and validated for PAID status
 - Update button disabled until valid inputs provided
 - Aligned with backend validation rules
+- No code duplication - DRY principle followed
+- Single source of truth for transition logic
 
 ## Valid Invoice Lifecycles
 
@@ -162,6 +195,17 @@ PAID (no further transitions)
 - Proper error handling
 - Payment method requirement enforced for PAID status
 - User cannot circumvent validation
+- No security vulnerabilities detected
+
+## Code Quality
+
+- **DRY Principle**: No code duplication
+- **Single Source of Truth**: Transition logic centralized
+- **Reusable Utilities**: Shared across components and tests
+- **Type Safety**: Full TypeScript support
+- **Documentation**: JSDoc comments on utilities
+- **Test Coverage**: Comprehensive test suite
+- **Clean Code**: Follows existing patterns
 
 ## Future Enhancements
 
@@ -172,7 +216,18 @@ While the current implementation is complete and functional, potential future im
 3. Show status history/timeline
 4. Add bulk status update functionality
 5. Automated status transitions (e.g., auto-mark as OVERDUE when due date passes)
+6. Status change notifications/emails
 
 ## Conclusion
 
-The invoice status update functionality now properly enforces backend validation rules at the UI level, providing a better user experience and preventing invalid status transitions. The implementation is fully tested, documented, and production-ready.
+The invoice status update functionality now properly enforces backend validation rules at the UI level, providing a better user experience and preventing invalid status transitions. The implementation:
+
+- ✅ Follows DRY principle (no duplication)
+- ✅ Has single source of truth for logic
+- ✅ Is fully tested (66 tests passing)
+- ✅ Is well-documented
+- ✅ Is production-ready
+- ✅ Passes all quality checks
+- ✅ Addresses all code review feedback
+- ✅ Has no security vulnerabilities
+
