@@ -10,11 +10,11 @@ export const toNumber = (value: string | number | undefined | null, defaultValue
   }
   
   if (typeof value === 'number') {
-    return value;
+    return isFinite(value) ? value : defaultValue;
   }
   
   const parsed = parseFloat(value);
-  return isNaN(parsed) ? defaultValue : parsed;
+  return isFinite(parsed) ? parsed : defaultValue;
 };
 
 /**

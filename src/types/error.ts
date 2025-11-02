@@ -5,11 +5,23 @@ export interface ApiErrorResponse {
   message?: string;
 }
 
+/**
+ * Checks if an error is an AxiosError
+ */
+const isAxiosError = (error: unknown): error is AxiosError<ApiErrorResponse> => {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'isAxiosError' in error &&
+    error.isAxiosError === true
+  );
+};
+
 export const getErrorMessage = (error: unknown): string => {
-  if (error && typeof error === 'object' && 'response' in error) {
-    const axiosError = error as AxiosError<ApiErrorResponse>;
-    return axiosError.response?.data?.detail || 
-           axiosError.response?.data?.message || 
+  if (isAxiosError(error)) {
+    return error.response?.data?.detail || 
+           error.response?.data?.message || 
+           error.message ||
            'An error occurred';
   }
   if (error instanceof Error) {

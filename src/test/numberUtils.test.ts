@@ -27,6 +27,14 @@ describe('numberUtils', () => {
       expect(toNumber('invalid', 50)).toBe(50);
       expect(toNumber('', 25)).toBe(25);
     });
+
+    it('should handle Infinity and NaN with default value', () => {
+      expect(toNumber(Infinity)).toBe(0);
+      expect(toNumber(-Infinity)).toBe(0);
+      expect(toNumber(NaN)).toBe(0);
+      expect(toNumber(Infinity, 100)).toBe(100);
+      expect(toNumber('Infinity', 50)).toBe(50);
+    });
   });
 
   describe('formatCurrency', () => {
