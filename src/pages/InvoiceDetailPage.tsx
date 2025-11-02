@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useInvoiceStore } from '../store';
 import { Loading, ErrorMessage, Button } from '../components/common';
 import { InvoiceStatus } from '../types';
+import { getValidInvoiceStatusTransitions, capitalizeFirstLetter } from '../utils';
 
 /**
  * Calculates the total price for an invoice item
@@ -21,17 +22,6 @@ export const InvoiceDetailPage: React.FC = () => {
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [newStatus, setNewStatus] = useState<InvoiceStatus | ''>('');
   const [paymentMethod, setPaymentMethod] = useState('');
-
-  // Get valid status transitions based on current invoice status
-  const getValidTransitions = (currentStatus: InvoiceStatus): InvoiceStatus[] => {
-    const transitions: Record<InvoiceStatus, InvoiceStatus[]> = {
-      [InvoiceStatus.DRAFT]: [InvoiceStatus.SENT],
-      [InvoiceStatus.SENT]: [InvoiceStatus.PAID, InvoiceStatus.OVERDUE],
-      [InvoiceStatus.OVERDUE]: [InvoiceStatus.PAID],
-      [InvoiceStatus.PAID]: [], // Cannot transition from PAID
-    };
-    return transitions[currentStatus] || [];
-  };
 
   useEffect(() => {
     if (id) {
@@ -311,7 +301,7 @@ export const InvoiceDetailPage: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">New Status</label>
-                    {getValidTransitions(currentInvoice.status).length === 0 ? (
+                    {getValidInvoiceStatusTransitions(currentInvoice.status).length === 0 ? (
                       <p className="text-sm text-gray-500 italic">
                         No valid status transitions available. Invoice is in final status.
                       </p>
@@ -322,9 +312,9 @@ export const InvoiceDetailPage: React.FC = () => {
                         className="mt-1 input-field"
                       >
                         <option value="">Select status</option>
-                        {getValidTransitions(currentInvoice.status).map((status) => (
+                        {getValidInvoiceStatusTransitions(currentInvoice.status).map((status) => (
                           <option key={status} value={status}>
-                            {status.charAt(0).toUpperCase() + status.slice(1)}
+                            {capitalizeFirstLetter(status)}
                           </option>
                         ))}
                       </select>
