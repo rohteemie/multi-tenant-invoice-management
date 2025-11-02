@@ -171,7 +171,7 @@ export const InvoiceListPage: React.FC = () => {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      ${invoice.total_amount.toFixed(2)}
+                      ${Number(invoice.total_amount).toFixed(2)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
