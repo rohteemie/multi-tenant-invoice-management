@@ -166,6 +166,28 @@ export const InvoiceDetailPage: React.FC = () => {
                 </dd>
               </div>
             )}
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Created By</dt>
+              <dd className="mt-1 text-sm text-gray-900">{currentInvoice.creator_id}</dd>
+            </div>
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Created At</dt>
+              <dd className="mt-1 text-sm text-gray-900">
+                {new Date(currentInvoice.created_at).toLocaleString()}
+              </dd>
+            </div>
+            {currentInvoice.updater_id && (
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Last Updated By</dt>
+                <dd className="mt-1 text-sm text-gray-900">{currentInvoice.updater_id}</dd>
+              </div>
+            )}
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Last Updated At</dt>
+              <dd className="mt-1 text-sm text-gray-900">
+                {new Date(currentInvoice.updated_at).toLocaleString()}
+              </dd>
+            </div>
             {currentInvoice.payment_method && (
               <div>
                 <dt className="text-sm font-medium text-gray-500">Payment Method</dt>

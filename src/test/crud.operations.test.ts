@@ -10,6 +10,7 @@ vi.mock('../services', () => ({
   invoiceService: {
     update: vi.fn(),
     delete: vi.fn(),
+    updateStatus: vi.fn(),
   },
   userService: {
     getAll: vi.fn(),
@@ -96,6 +97,81 @@ describe('Invoice Store - Update and Delete', () => {
     await waitFor(() => {
       expect(result.current.error).toBeTruthy();
     });
+  });
+
+  it('should update invoice status successfully', async () => {
+    const { invoiceService } = await import('../services');
+    const mockInvoice = {
+      id: '1',
+      invoice_number: 'INV-001',
+      customer_name: 'Test Customer',
+      tenant_id: 'tenant-1',
+      creator_id: 'user-1',
+      updater_id: 'user-2',
+      status: 'sent' as const,
+      issue_date: '2024-01-01',
+      subtotal: 100,
+      tax_amount: 0,
+      discount_amount: 0,
+      total_amount: 100,
+      items: [],
+      created_at: '2024-01-01',
+      updated_at: '2024-01-02',
+    };
+
+    vi.mocked(invoiceService.updateStatus).mockResolvedValue(mockInvoice);
+
+    const { result } = renderHook(() => useInvoiceStore());
+
+    await act(async () => {
+      await result.current.updateInvoiceStatus('1', { status: 'sent' });
+    });
+
+    expect(invoiceService.updateStatus).toHaveBeenCalledWith('1', { status: 'sent' });
+    expect(result.current.currentInvoice).toEqual(mockInvoice);
+    expect(result.current.currentInvoice?.status).toBe('sent');
+  });
+
+  it('should update invoice status to paid with payment method', async () => {
+    const { invoiceService } = await import('../services');
+    const mockInvoice = {
+      id: '1',
+      invoice_number: 'INV-001',
+      customer_name: 'Test Customer',
+      tenant_id: 'tenant-1',
+      creator_id: 'user-1',
+      updater_id: 'user-2',
+      status: 'paid' as const,
+      issue_date: '2024-01-01',
+      subtotal: 100,
+      tax_amount: 0,
+      discount_amount: 0,
+      total_amount: 100,
+      payment_method: 'Credit Card',
+      paid_at: '2024-01-03',
+      items: [],
+      created_at: '2024-01-01',
+      updated_at: '2024-01-03',
+    };
+
+    vi.mocked(invoiceService.updateStatus).mockResolvedValue(mockInvoice);
+
+    const { result } = renderHook(() => useInvoiceStore());
+
+    await act(async () => {
+      await result.current.updateInvoiceStatus('1', { 
+        status: 'paid',
+        payment_method: 'Credit Card'
+      });
+    });
+
+    expect(invoiceService.updateStatus).toHaveBeenCalledWith('1', { 
+      status: 'paid',
+      payment_method: 'Credit Card'
+    });
+    expect(result.current.currentInvoice).toEqual(mockInvoice);
+    expect(result.current.currentInvoice?.status).toBe('paid');
+    expect(result.current.currentInvoice?.payment_method).toBe('Credit Card');
   });
 });
 

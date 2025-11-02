@@ -29,6 +29,7 @@ export interface Invoice {
   invoice_number: string;
   tenant_id: string;
   creator_id: string;
+  updater_id?: string;
   customer_name: string;
   customer_email?: string;
   customer_phone?: string;
