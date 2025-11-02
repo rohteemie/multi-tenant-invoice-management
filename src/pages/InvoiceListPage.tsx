@@ -16,7 +16,7 @@ export const InvoiceListPage: React.FC = () => {
   const loadInvoices = async () => {
     try {
       await fetchInvoices({ status: statusFilter || undefined, customer_name: customerFilter || undefined });
-    } catch (err) {
+    } catch {
       // Error is handled in store
     }
   };
@@ -28,7 +28,7 @@ export const InvoiceListPage: React.FC = () => {
   const handleExport = async (format: 'csv' | 'json') => {
     try {
       await exportInvoices(format, { status: statusFilter || undefined });
-    } catch (err) {
+    } catch {
       // Error is handled in store
     }
   };

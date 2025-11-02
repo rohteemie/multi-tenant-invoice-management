@@ -1,5 +1,5 @@
 import { apiClient } from './api';
-import type { Token, LoginCredentials } from '../types';
+import type { Token, LoginCredentials, TenantRegister, TenantWithOwner } from '../types';
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<Token> {
@@ -20,8 +20,8 @@ export const authService = {
     return response.data;
   },
 
-  async register(userData: any) {
-    const response = await apiClient.post('/auth/register', userData);
+  async register(userData: TenantRegister): Promise<TenantWithOwner> {
+    const response = await apiClient.post<TenantWithOwner>('/auth/register', userData);
     return response.data;
   },
 

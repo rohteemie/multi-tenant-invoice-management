@@ -42,7 +42,11 @@ export const invoiceService = {
     await apiClient.delete(`/invoices/${id}`);
   },
 
-  async exportInvoices(format: 'csv' | 'json', params?: any): Promise<Blob> {
+  async exportInvoices(format: 'csv' | 'json', params?: {
+    status?: string;
+    customer_name?: string;
+    branch_id?: string;
+  }): Promise<Blob> {
     const response = await apiClient.get(`/invoices/export/invoices`, {
       params: { ...params, format },
       responseType: 'blob',

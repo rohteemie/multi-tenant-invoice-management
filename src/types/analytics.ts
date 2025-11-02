@@ -4,13 +4,13 @@ export interface InvoiceSummary {
   sent_count: number;
   paid_count: number;
   overdue_count: number;
-  total_revenue: number;
-  pending_amount: number;
-  overdue_amount: number;
+  total_revenue: string | number;
+  pending_amount: string | number;
+  overdue_amount: string | number;
 }
 
 export interface RevenueByStatus {
   status: string;
   count: number;
-  total_amount: number;
+  total_amount: string | number;
 }
