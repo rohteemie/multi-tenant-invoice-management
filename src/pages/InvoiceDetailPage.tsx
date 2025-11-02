@@ -198,7 +198,7 @@ export const InvoiceDetailPage: React.FC = () => {
               <div>
                 <dt className="text-sm font-medium text-gray-500">Paid At</dt>
                 <dd className="mt-1 text-sm text-gray-900">
-                  {new Date(currentInvoice.paid_at).toLocaleDateString()}
+                  {new Date(currentInvoice.paid_at).toLocaleString()}
                 </dd>
               </div>
             )}
