@@ -173,6 +173,39 @@ describe('Invoice Store - Update and Delete', () => {
     expect(result.current.currentInvoice?.status).toBe('paid');
     expect(result.current.currentInvoice?.payment_method).toBe('Credit Card');
   });
+
+  it('should update invoice status from draft to sent', async () => {
+    const { invoiceService } = await import('../services');
+    const mockInvoice = {
+      id: '1',
+      invoice_number: 'INV-001',
+      customer_name: 'Test Customer',
+      tenant_id: 'tenant-1',
+      creator_id: 'user-1',
+      updater_id: 'user-2',
+      status: 'sent' as const,
+      issue_date: '2024-01-01',
+      subtotal: 100,
+      tax_amount: 0,
+      discount_amount: 0,
+      total_amount: 100,
+      items: [],
+      created_at: '2024-01-01',
+      updated_at: '2024-01-02',
+    };
+
+    vi.mocked(invoiceService.updateStatus).mockResolvedValue(mockInvoice);
+
+    const { result } = renderHook(() => useInvoiceStore());
+
+    await act(async () => {
+      await result.current.updateInvoiceStatus('1', { status: 'sent' });
+    });
+
+    expect(invoiceService.updateStatus).toHaveBeenCalledWith('1', { status: 'sent' });
+    expect(result.current.currentInvoice).toEqual(mockInvoice);
+    expect(result.current.currentInvoice?.status).toBe('sent');
+  });
 });
 
 describe('User Store - Update and Delete', () => {
