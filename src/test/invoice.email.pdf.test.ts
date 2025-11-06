@@ -24,8 +24,10 @@ describe('Invoice Store - Email and PDF Features', () => {
     // Setup URL mocks
     createObjectURLMock = vi.fn(() => 'blob:mock-url');
     revokeObjectURLMock = vi.fn();
-    global.URL.createObjectURL = createObjectURLMock;
-    global.URL.revokeObjectURL = revokeObjectURLMock;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    globalThis.URL.createObjectURL = createObjectURLMock as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    globalThis.URL.revokeObjectURL = revokeObjectURLMock as any;
   });
 
   afterEach(() => {
@@ -95,8 +97,10 @@ describe('Invoice Store - Email and PDF Features', () => {
     const linkElement = document.createElement('a');
     linkElement.click = clickMock;
     
-    createElementSpy = vi.spyOn(document, 'createElement');
-    createElementSpy.mockReturnValue(linkElement);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    createElementSpy = vi.spyOn(document, 'createElement') as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    createElementSpy.mockReturnValue(linkElement as any);
 
     const { result } = renderHook(() => useInvoiceStore());
 
@@ -160,6 +164,7 @@ describe('Invoice Store - Email and PDF Features', () => {
 
     // Set initial state
     act(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       result.current.currentInvoice = mockInvoiceDraft as any;
     });
 
