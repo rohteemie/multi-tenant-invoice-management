@@ -1,0 +1,1 @@
+export { InvoicePrintTemplate } from './InvoicePrintTemplate';

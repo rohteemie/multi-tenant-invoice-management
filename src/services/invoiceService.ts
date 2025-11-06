@@ -65,4 +65,28 @@ export const invoiceService = {
     });
     return response.data;
   },
+
+  /**
+   * Upload a client-generated PDF and optionally send via email
+   * @param id - Invoice ID
+   * @param pdfBlob - PDF file as a Blob
+   * @param sendEmail - Whether to send the PDF via email after upload
+   * @returns Updated invoice
+   */
+  async uploadPDFAndSend(id: string, pdfBlob: Blob, sendEmail: boolean = false): Promise<Invoice> {
+    const formData = new FormData();
+    formData.append('file', pdfBlob, `invoice-${id}.pdf`);
+    formData.append('send_email', sendEmail.toString());
+
+    const response = await apiClient.post<Invoice>(
+      `/invoices/${id}/send`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response.data;
+  },
 };
