@@ -8,6 +8,9 @@ import type { Invoice } from '../types';
 import { InvoiceStatus } from '../types';
 import * as pdfUtils from '../utils/pdfUtils';
 
+// Type for the invoice store
+type InvoiceStoreType = ReturnType<typeof useInvoiceStore>;
+
 // Mock the store
 vi.mock('../store', () => ({
   useInvoiceStore: vi.fn(),
@@ -59,21 +62,27 @@ describe('Invoice PDF Workflow E2E Tests', () => {
     updated_at: '2024-01-01T00:00:00Z',
   };
 
-  const mockStoreValues = {
+  const createMockStore = (overrides?: Partial<InvoiceStoreType>): InvoiceStoreType => ({
     currentInvoice: mockInvoice,
+    invoices: [],
     isLoading: false,
     error: null,
+    fetchInvoices: vi.fn(),
     fetchInvoiceById: vi.fn(),
+    createInvoice: vi.fn(),
+    updateInvoice: vi.fn(),
     updateInvoiceStatus: vi.fn(),
     deleteInvoice: vi.fn(),
+    exportInvoices: vi.fn(),
     sendInvoiceEmail: vi.fn(),
     uploadPDFAndSend: vi.fn(),
     setError: vi.fn(),
-  };
+    ...overrides,
+  });
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useInvoiceStore).mockReturnValue(mockStoreValues as any);
+    vi.mocked(useInvoiceStore).mockReturnValue(createMockStore());
   });
 
   it('should render invoice detail page with PDF download button', async () => {
@@ -210,13 +219,9 @@ describe('Invoice PDF Workflow E2E Tests', () => {
     const mockUploadPDFAndSend = vi.fn().mockResolvedValue(mockInvoice);
     
     vi.mocked(pdfUtils.generateAndUploadPDF).mockImplementation(mockGenerateAndUploadPDF);
-    vi.mocked(useInvoiceStore).mockReturnValue({
-      ...mockStoreValues,
-      uploadPDFAndSend: mockUploadPDFAndSend,
-    } as any);
-
-    // Mock window.confirm
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    vi.mocked(useInvoiceStore).mockReturnValue(
+      createMockStore({ uploadPDFAndSend: mockUploadPDFAndSend })
+    );
 
     render(
       <BrowserRouter>
@@ -241,12 +246,18 @@ describe('Invoice PDF Workflow E2E Tests', () => {
     const consentButton = screen.getByRole('button', { name: /i consent/i });
     await user.click(consentButton);
 
-    // Wait for confirm dialog
+    // Wait for confirmation modal
     await waitFor(() => {
-      expect(confirmSpy).toHaveBeenCalledWith(
-        expect.stringContaining('customer@example.com')
-      );
+      expect(screen.getByText('Confirm Send Invoice')).toBeInTheDocument();
     });
+
+    // Verify email is in the modal
+    const modal = screen.getByText('Confirm Send Invoice').closest('div[class*="inline-block"]');
+    expect(modal).toContainHTML('customer@example.com');
+
+    // Click send invoice button
+    const sendButton = screen.getByRole('button', { name: /send invoice/i });
+    await user.click(sendButton);
 
     // Verify upload and send was called
     await waitFor(() => {
@@ -257,8 +268,6 @@ describe('Invoice PDF Workflow E2E Tests', () => {
     await waitFor(() => {
       expect(screen.getByText(/Invoice PDF generated and sent successfully/i)).toBeInTheDocument();
     });
-
-    confirmSpy.mockRestore();
   });
 
   it('should handle PDF generation errors gracefully', async () => {
@@ -267,10 +276,9 @@ describe('Invoice PDF Workflow E2E Tests', () => {
     vi.mocked(pdfUtils.downloadPDF).mockImplementation(mockDownloadPDF);
 
     const mockSetError = vi.fn();
-    vi.mocked(useInvoiceStore).mockReturnValue({
-      ...mockStoreValues,
-      setError: mockSetError,
-    } as any);
+    vi.mocked(useInvoiceStore).mockReturnValue(
+      createMockStore({ setError: mockSetError })
+    );
 
     render(
       <BrowserRouter>
@@ -302,10 +310,9 @@ describe('Invoice PDF Workflow E2E Tests', () => {
 
   it('should not show generate & send button for non-draft invoices', async () => {
     const paidInvoice = { ...mockInvoice, status: InvoiceStatus.PAID };
-    vi.mocked(useInvoiceStore).mockReturnValue({
-      ...mockStoreValues,
-      currentInvoice: paidInvoice,
-    } as any);
+    vi.mocked(useInvoiceStore).mockReturnValue(
+      createMockStore({ currentInvoice: paidInvoice })
+    );
 
     render(
       <BrowserRouter>
@@ -322,10 +329,9 @@ describe('Invoice PDF Workflow E2E Tests', () => {
 
   it('should not show generate & send button for invoices without email', async () => {
     const invoiceNoEmail = { ...mockInvoice, customer_email: undefined };
-    vi.mocked(useInvoiceStore).mockReturnValue({
-      ...mockStoreValues,
-      currentInvoice: invoiceNoEmail,
-    } as any);
+    vi.mocked(useInvoiceStore).mockReturnValue(
+      createMockStore({ currentInvoice: invoiceNoEmail })
+    );
 
     render(
       <BrowserRouter>

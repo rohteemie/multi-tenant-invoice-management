@@ -41,7 +41,7 @@ const DEFAULT_PDF_OPTIONS: PDFGenerationOptions = {
  * Generate PDF from HTML element
  * @param element - The HTML element to convert to PDF
  * @param options - PDF generation options
- * @returns Promise that resolves when PDF is generated
+ * @returns Promise that resolves with PDF Blob
  */
 export async function generatePDF(
   element: HTMLElement, 
@@ -51,12 +51,17 @@ export async function generatePDF(
   
   try {
     // Generate PDF and return as blob
-    const pdfBlob = await html2pdf()
+    const result = await html2pdf()
       .set(mergedOptions)
       .from(element)
       .outputPdf('blob');
     
-    return pdfBlob as Blob;
+    // Verify the result is a Blob
+    if (!(result instanceof Blob)) {
+      throw new Error('PDF generation did not return a valid Blob');
+    }
+    
+    return result;
   } catch (error) {
     console.error('Error generating PDF:', error);
     throw new Error('Failed to generate PDF. Please try again.');

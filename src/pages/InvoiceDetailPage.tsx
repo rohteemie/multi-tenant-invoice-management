@@ -37,6 +37,7 @@ export const InvoiceDetailPage: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [consentAction, setConsentAction] = useState<'download' | 'upload-send' | null>(null);
+  const [showConfirmSendModal, setShowConfirmSendModal] = useState(false);
   const printTemplateRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -128,21 +129,32 @@ export const InvoiceDetailPage: React.FC = () => {
     
     setShowConsentModal(false);
     
-    if (window.confirm(`Generate PDF and send invoice to ${currentInvoice.customer_email}?`)) {
-      try {
-        await generateAndUploadPDF(
-          printTemplateRef.current,
-          id,
-          async (invoiceId: string, pdfBlob: Blob) => {
-            await uploadPDFAndSend(invoiceId, pdfBlob, true);
-          }
-        );
-        setSuccessMessage('Invoice PDF generated and sent successfully! Status updated to "sent"');
-        setTimeout(() => setSuccessMessage(null), 3000);
-      } catch (error) {
-        setError(error instanceof Error ? error.message : 'Failed to generate and send PDF');
-      }
+    // Show confirmation modal instead of window.confirm
+    setShowConfirmSendModal(true);
+  };
+
+  const handleConfirmSend = async () => {
+    if (!id || !currentInvoice || !printTemplateRef.current) return;
+    
+    setShowConfirmSendModal(false);
+    
+    try {
+      await generateAndUploadPDF(
+        printTemplateRef.current,
+        id,
+        async (invoiceId: string, pdfBlob: Blob) => {
+          await uploadPDFAndSend(invoiceId, pdfBlob, true);
+        }
+      );
+      setSuccessMessage('Invoice PDF generated and sent successfully! Status updated to "sent"');
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to generate and send PDF');
     }
+  };
+
+  const handleCancelSend = () => {
+    setShowConfirmSendModal(false);
   };
 
   const handleConsentCancel = () => {
@@ -489,6 +501,56 @@ export const InvoiceDetailPage: React.FC = () => {
                 </Button>
                 <Button
                   onClick={handleCloseModal}
+                  variant="secondary"
+                  className="w-full sm:w-auto mt-3 sm:mt-0"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Send Modal */}
+      {showConfirmSendModal && currentInvoice && (
+        <div className="fixed z-20 inset-0 overflow-y-auto">
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={handleCancelSend}></div>
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900">
+                      Confirm Send Invoice
+                    </h3>
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-500">
+                        Generate PDF and send invoice to <strong>{currentInvoice.customer_email}</strong>?
+                      </p>
+                      <p className="text-sm text-gray-500 mt-2">
+                        The invoice status will be updated to "sent" after successful delivery.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <Button
+                  onClick={handleConfirmSend}
+                  variant="primary"
+                  className="w-full sm:w-auto sm:ml-3"
+                  isLoading={isLoading}
+                >
+                  Send Invoice
+                </Button>
+                <Button
+                  onClick={handleCancelSend}
                   variant="secondary"
                   className="w-full sm:w-auto mt-3 sm:mt-0"
                 >

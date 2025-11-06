@@ -3,6 +3,8 @@ import type { Invoice } from '../../types';
 
 interface InvoicePrintTemplateProps {
   invoice: Invoice;
+  companyName?: string;
+  companyAddress?: string;
 }
 
 /**
@@ -11,7 +13,7 @@ interface InvoicePrintTemplateProps {
  * Includes @media print styles to hide interactive elements
  */
 export const InvoicePrintTemplate = React.forwardRef<HTMLDivElement, InvoicePrintTemplateProps>(
-  ({ invoice }, ref) => {
+  ({ invoice, companyName = 'Your Company', companyAddress }, ref) => {
     const calculateItemTotal = (item: { quantity: number | string; unit_price: number | string; total_price?: number | string }): string => {
       if (item.total_price) {
         return Number(item.total_price).toFixed(2);
@@ -81,12 +83,12 @@ export const InvoicePrintTemplate = React.forwardRef<HTMLDivElement, InvoicePrin
 
         {/* Company and Customer Info */}
         <div className="grid grid-cols-2 gap-8 mb-8">
-          {/* From (Company) - This would typically come from tenant info */}
+          {/* From (Company) */}
           <div>
             <h3 className="text-sm font-semibold text-gray-500 uppercase mb-2">From</h3>
             <div className="text-gray-900">
-              <p className="font-semibold text-lg">Your Company Name</p>
-              {/* Additional company details can be added here */}
+              <p className="font-semibold text-lg">{companyName}</p>
+              {companyAddress && <p className="text-sm mt-1">{companyAddress}</p>}
             </div>
           </div>
 
