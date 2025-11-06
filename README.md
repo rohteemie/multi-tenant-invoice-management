@@ -6,12 +6,15 @@ A modern, feature-rich React-powered multi-tenant SaaS frontend for Invoice Mana
 
 - **Multi-Tenant Architecture**: Secure tenant isolation with role-based access control
 - **Complete Invoice Management**: Create, view, update, and manage invoices with ease
-- **Invoice Email Delivery**: Send invoices directly to customers via email
-- **PDF Export**: Download invoices as professional PDF documents
+- **Client-Side PDF Generation**: Generate high-quality PDFs directly in the browser with GDPR compliance
+- **Invoice Email Delivery**: Send invoices with PDF attachments directly to customers
+- **PDF Export**: Download invoices as professional PDF documents with print-friendly formatting
 - **Real-time Analytics**: Dashboard with comprehensive metrics and revenue tracking
 - **User Management**: Manage users with different roles (Owner, Admin, Manager, Attendant)
 - **Export Functionality**: Export invoices in CSV and JSON formats
 - **Status Management**: Update invoice status from draft to sent/paid with dropdown options
+- **GDPR Compliance**: Explicit consent required for PDF generation and data processing
+- **Accessibility**: Fully accessible modals and keyboard navigation support
 - **Responsive Design**: Mobile-first design with Tailwind CSS
 - **Type-Safe**: Built with TypeScript for enhanced developer experience
 - **State Management**: Zustand for efficient global state management
@@ -153,10 +156,13 @@ src/
 - Track invoice lifecycle: Draft → Sent → Paid → Overdue
 - Add customer details and payment information
 - Calculate totals automatically
-- **Send invoices to customers via email**
-- **Download invoices as PDF**
-- **Update invoice status with dropdown selection**
-- **Mark invoices as paid with payment method tracking**
+- **Client-side PDF generation** with printable template
+- **GDPR-compliant consent workflow** for PDF operations
+- **Download invoices as professional PDFs** matching invoice design
+- **Generate and send PDFs** directly to customers via email
+- **Update invoice status** with dropdown selection
+- **Mark invoices as paid** with payment method tracking
+- **Accessible modals** for all user interactions
 
 ### Analytics Dashboard
 
@@ -169,7 +175,8 @@ src/
 
 - Export invoices to CSV
 - Export invoices to JSON
-- **Download individual invoices as PDF**
+- **Download individual invoices as PDF** (client-side generation)
+- **Upload PDFs to backend** for email delivery
 - Filter exports by status
 
 ## 🛠️ Development
@@ -228,6 +235,40 @@ npm run build
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
 | `VITE_API_BASE_URL` | Backend API base URL | `http://localhost:8000/api/v1` | Yes |
+
+## 📄 Client-Side PDF Generation
+
+This application features advanced client-side PDF generation with GDPR compliance and accessibility support.
+
+### Features
+
+- **Browser-Based Generation**: PDFs created directly in the browser using html2pdf.js
+- **Professional Quality**: High-fidelity PDFs matching the invoice design
+- **Print-Friendly**: Optimized for both screen and print with @media queries
+- **GDPR Compliant**: Explicit consent required before PDF operations
+- **Accessible**: All modals support keyboard navigation and screen readers
+- **Two Workflows**:
+  1. **Download**: Generate and download PDF to device
+  2. **Upload & Send**: Generate, upload to server, and email to customer
+
+### Usage
+
+1. Navigate to any invoice detail page
+2. Click "Download PDF" for local download
+3. Click "Generate & Send PDF" to email customer (draft invoices only)
+4. Review and accept GDPR consent
+5. Confirm send operation (for email workflow)
+6. PDF generated and delivered
+
+### Documentation
+
+See [CLIENT_SIDE_PDF_GUIDE.md](./CLIENT_SIDE_PDF_GUIDE.md) for comprehensive documentation including:
+- Architecture details
+- User workflows
+- Security & privacy
+- Testing guide
+- API integration
+- Troubleshooting
 
 ## 🧪 Testing
 
