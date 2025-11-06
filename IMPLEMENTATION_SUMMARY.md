@@ -218,6 +218,10 @@ All requested functionality has been implemented:
 - ✅ Invoice update/delete is functional
 - ✅ User update/delete is functional
 - ✅ Tenant update/delete is functional
-- ✅ Comprehensive tests added (37 tests passing)
+- ✅ Invoice email sending is functional (draft → sent)
+- ✅ PDF download is functional
+- ✅ Invoice status update via dropdown is functional
+- ✅ Comprehensive tests added (71 tests passing)
 - ✅ Proper error handling implemented
 - ✅ All builds and tests pass
+- ✅ Documentation updated
