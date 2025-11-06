@@ -30,6 +30,8 @@ interface InvoiceState {
   updateInvoiceStatus: (id: string, data: InvoiceStatusUpdate) => Promise<Invoice>;
   deleteInvoice: (id: string) => Promise<void>;
   exportInvoices: (format: 'csv' | 'json', params?: InvoiceExportParams) => Promise<void>;
+  sendInvoiceEmail: (id: string) => Promise<Invoice>;
+  downloadInvoicePDF: (id: string) => Promise<void>;
   setError: (error: string | null) => void;
 }
 
@@ -140,6 +142,41 @@ export const useInvoiceStore = create<InvoiceState>((set) => ({
     } catch (error: unknown) {
       const errorMessage = getErrorMessage(error);
       set({ error: errorMessage });
+      throw error;
+    }
+  },
+
+  sendInvoiceEmail: async (id: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const invoice = await invoiceService.sendInvoiceEmail(id);
+      set((state) => ({
+        invoices: state.invoices.map((inv) => (inv.id === id ? invoice : inv)),
+        currentInvoice: invoice,
+        isLoading: false,
+      }));
+      return invoice;
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
+      set({ error: errorMessage, isLoading: false });
+      throw error;
+    }
+  },
+
+  downloadInvoicePDF: async (id: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const blob = await invoiceService.downloadPDF(id);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `invoice-${id}.pdf`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+      set({ isLoading: false });
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
+      set({ error: errorMessage, isLoading: false });
       throw error;
     }
   },

@@ -53,4 +53,16 @@ export const invoiceService = {
     });
     return response.data;
   },
+
+  async sendInvoiceEmail(id: string): Promise<Invoice> {
+    const response = await apiClient.post<Invoice>(`/invoices/${id}/send`);
+    return response.data;
+  },
+
+  async downloadPDF(id: string): Promise<Blob> {
+    const response = await apiClient.get(`/invoices/${id}/pdf`, {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
 };

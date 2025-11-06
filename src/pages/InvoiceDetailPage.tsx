@@ -18,10 +18,21 @@ const calculateItemTotal = (item: { quantity: number | string; unit_price: numbe
 export const InvoiceDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { currentInvoice, isLoading, error, fetchInvoiceById, updateInvoiceStatus, deleteInvoice } = useInvoiceStore();
+  const { 
+    currentInvoice, 
+    isLoading, 
+    error, 
+    fetchInvoiceById, 
+    updateInvoiceStatus, 
+    deleteInvoice,
+    sendInvoiceEmail,
+    downloadInvoicePDF,
+    setError
+  } = useInvoiceStore();
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [newStatus, setNewStatus] = useState<InvoiceStatus | ''>('');
   const [paymentMethod, setPaymentMethod] = useState('');
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -44,6 +55,38 @@ export const InvoiceDetailPage: React.FC = () => {
         payment_method: newStatus === InvoiceStatus.PAID ? paymentMethod : undefined,
       });
       handleCloseModal();
+      setSuccessMessage('Invoice status updated successfully');
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch {
+      // Error is handled in store
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!id) return;
+    if (!currentInvoice?.customer_email) {
+      setError('Cannot send invoice: Customer email is missing');
+      return;
+    }
+    
+    if (window.confirm(`Send invoice to ${currentInvoice.customer_email}?`)) {
+      try {
+        await sendInvoiceEmail(id);
+        setSuccessMessage('Invoice sent successfully! Status updated to "sent"');
+        setTimeout(() => setSuccessMessage(null), 3000);
+      } catch {
+        // Error is handled in store
+      }
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!id) return;
+    
+    try {
+      await downloadInvoicePDF(id);
+      setSuccessMessage('Invoice PDF downloaded successfully');
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch {
       // Error is handled in store
     }
@@ -103,7 +146,15 @@ export const InvoiceDetailPage: React.FC = () => {
             {currentInvoice.status}
           </span>
         </div>
-        <div className="mt-4 flex space-x-3 md:mt-0 md:ml-4">
+        <div className="mt-4 flex flex-wrap gap-3 md:mt-0 md:ml-4">
+          <Button variant="secondary" onClick={handleDownloadPDF} isLoading={isLoading}>
+            Download PDF
+          </Button>
+          {currentInvoice.status === InvoiceStatus.DRAFT && currentInvoice.customer_email && (
+            <Button variant="primary" onClick={handleSendEmail} isLoading={isLoading}>
+              Send to Customer
+            </Button>
+          )}
           <Button variant="secondary" onClick={() => setShowStatusModal(true)}>
             Update Status
           </Button>
@@ -119,6 +170,21 @@ export const InvoiceDetailPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {successMessage && (
+        <div className="rounded-md bg-green-50 p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium text-green-800">{successMessage}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {error && <ErrorMessage message={error} />}
 

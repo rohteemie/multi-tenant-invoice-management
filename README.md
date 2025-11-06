@@ -6,13 +6,16 @@ A modern, feature-rich React-powered multi-tenant SaaS frontend for Invoice Mana
 
 - **Multi-Tenant Architecture**: Secure tenant isolation with role-based access control
 - **Complete Invoice Management**: Create, view, update, and manage invoices with ease
+- **Invoice Email Delivery**: Send invoices directly to customers via email
+- **PDF Export**: Download invoices as professional PDF documents
 - **Real-time Analytics**: Dashboard with comprehensive metrics and revenue tracking
 - **User Management**: Manage users with different roles (Owner, Admin, Manager, Attendant)
 - **Export Functionality**: Export invoices in CSV and JSON formats
+- **Status Management**: Update invoice status from draft to sent/paid with dropdown options
 - **Responsive Design**: Mobile-first design with Tailwind CSS
 - **Type-Safe**: Built with TypeScript for enhanced developer experience
 - **State Management**: Zustand for efficient global state management
-- **Modern Stack**: React 18, Vite, React Router, Axios
+- **Modern Stack**: React 19, Vite, React Router, Axios
 
 ## 📋 Prerequisites
 
@@ -150,6 +153,10 @@ src/
 - Track invoice lifecycle: Draft → Sent → Paid → Overdue
 - Add customer details and payment information
 - Calculate totals automatically
+- **Send invoices to customers via email**
+- **Download invoices as PDF**
+- **Update invoice status with dropdown selection**
+- **Mark invoices as paid with payment method tracking**
 
 ### Analytics Dashboard
 
@@ -162,6 +169,7 @@ src/
 
 - Export invoices to CSV
 - Export invoices to JSON
+- **Download individual invoices as PDF**
 - Filter exports by status
 
 ## 🛠️ Development

@@ -8,7 +8,7 @@ import { InvoiceStatus } from '../types';
 export const InvoiceEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { currentInvoice, isLoading, error, setError, fetchInvoiceById, updateInvoice } = useInvoiceStore();
+  const { currentInvoice, isLoading, error, setError, fetchInvoiceById, updateInvoice, updateInvoiceStatus } = useInvoiceStore();
 
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -25,6 +25,8 @@ export const InvoiceEditPage: React.FC = () => {
     { description: '', quantity: 1, unit_price: 0 },
   ]);
 
+  const [selectedStatus, setSelectedStatus] = useState<InvoiceStatus>(InvoiceStatus.DRAFT);
+  const [paymentMethod, setPaymentMethod] = useState('');
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
@@ -62,6 +64,7 @@ export const InvoiceEditPage: React.FC = () => {
         );
       }
 
+      setSelectedStatus(currentInvoice.status);
       setIsInitialized(true);
     }
   }, [currentInvoice, isInitialized]);
@@ -107,11 +110,26 @@ export const InvoiceEditPage: React.FC = () => {
       return;
     }
 
+    if (selectedStatus === InvoiceStatus.PAID && !paymentMethod) {
+      setError('Payment method is required when marking invoice as paid');
+      return;
+    }
+
     try {
+      // First update the invoice details
       await updateInvoice(id, {
         ...formData,
         items,
       });
+
+      // Then update status if it changed
+      if (currentInvoice && selectedStatus !== currentInvoice.status) {
+        await updateInvoiceStatus(id, {
+          status: selectedStatus,
+          payment_method: selectedStatus === InvoiceStatus.PAID ? paymentMethod : undefined,
+        });
+      }
+
       navigate(`/invoices/${id}`);
     } catch {
       // Error is handled in store
@@ -270,6 +288,47 @@ export const InvoiceEditPage: React.FC = () => {
                 className="mt-1 input-field"
               />
             </div>
+
+            <div>
+              <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+                Invoice Status *
+              </label>
+              <select
+                id="status"
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value as InvoiceStatus)}
+                className="mt-1 input-field"
+              >
+                <option value={InvoiceStatus.DRAFT}>Draft</option>
+                <option value={InvoiceStatus.SENT}>Sent</option>
+                <option value={InvoiceStatus.PAID}>Paid</option>
+                <option value={InvoiceStatus.OVERDUE}>Overdue</option>
+              </select>
+              <p className="mt-1 text-xs text-gray-500">
+                Update invoice status as needed
+              </p>
+            </div>
+
+            {selectedStatus === InvoiceStatus.PAID && (
+              <div>
+                <label htmlFor="payment_method" className="block text-sm font-medium text-gray-700">
+                  Payment Method *
+                </label>
+                <input
+                  id="payment_method"
+                  name="payment_method"
+                  type="text"
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="mt-1 input-field"
+                  placeholder="e.g., Credit Card, Cash, Bank Transfer"
+                  required={selectedStatus === InvoiceStatus.PAID}
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  Required when marking invoice as paid
+                </p>
+              </div>
+            )}
 
             <div className="sm:col-span-2">
               <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
