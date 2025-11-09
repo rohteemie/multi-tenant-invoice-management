@@ -63,7 +63,7 @@ describe('UsersPage - User Management Permissions', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useUserStore).mockReturnValue(mockUserStore as any);
+    vi.mocked(useUserStore).mockReturnValue(mockUserStore as ReturnType<typeof useUserStore>);
   });
 
   it('should only allow owner to see edit and delete buttons', () => {
@@ -71,7 +71,7 @@ describe('UsersPage - User Management Permissions', () => {
     vi.mocked(useAuthStore).mockReturnValue({
       user: mockUsers[0], // Owner
       isAuthenticated: true,
-    } as any);
+    } as ReturnType<typeof useUserStore>);
 
     render(<UsersPage />);
 
@@ -89,7 +89,7 @@ describe('UsersPage - User Management Permissions', () => {
     vi.mocked(useAuthStore).mockReturnValue({
       user: mockUsers[1], // Admin
       isAuthenticated: true,
-    } as any);
+    } as ReturnType<typeof useUserStore>);
 
     render(<UsersPage />);
 
@@ -103,7 +103,7 @@ describe('UsersPage - User Management Permissions', () => {
     vi.mocked(useAuthStore).mockReturnValue({
       user: mockUsers[0], // Owner
       isAuthenticated: true,
-    } as any);
+    } as ReturnType<typeof useUserStore>);
 
     // Add another owner to the users list
     const usersWithTwoOwners = [
@@ -124,7 +124,7 @@ describe('UsersPage - User Management Permissions', () => {
     vi.mocked(useUserStore).mockReturnValue({
       ...mockUserStore,
       users: usersWithTwoOwners,
-    } as any);
+    } as ReturnType<typeof useUserStore>);
 
     render(<UsersPage />);
 
@@ -138,7 +138,7 @@ describe('UsersPage - User Management Permissions', () => {
     vi.mocked(useAuthStore).mockReturnValue({
       user: mockUsers[0], // Owner
       isAuthenticated: true,
-    } as any);
+    } as ReturnType<typeof useUserStore>);
 
     render(<UsersPage />);
 
@@ -153,7 +153,7 @@ describe('UsersPage - User Management Permissions', () => {
     vi.mocked(useAuthStore).mockReturnValue({
       user: mockUsers[0], // Owner
       isAuthenticated: true,
-    } as any);
+    } as ReturnType<typeof useUserStore>);
 
     mockUserStore.updateUser.mockResolvedValue(mockUsers[1]);
 
@@ -183,7 +183,7 @@ describe('UsersPage - User Management Permissions', () => {
     vi.mocked(useAuthStore).mockReturnValue({
       user: mockUsers[0], // Owner
       isAuthenticated: true,
-    } as any);
+    } as ReturnType<typeof useUserStore>);
 
     mockUserStore.deleteUser.mockResolvedValue(undefined);
 
@@ -213,7 +213,7 @@ describe('UsersPage - User Management Permissions', () => {
     vi.mocked(useAuthStore).mockReturnValue({
       user: mockUsers[0], // Owner
       isAuthenticated: true,
-    } as any);
+    } as ReturnType<typeof useUserStore>);
 
     // Add another owner to test editing
     const usersWithTwoOwners = [
@@ -234,7 +234,7 @@ describe('UsersPage - User Management Permissions', () => {
     vi.mocked(useUserStore).mockReturnValue({
       ...mockUserStore,
       users: usersWithTwoOwners,
-    } as any);
+    } as ReturnType<typeof useUserStore>);
 
     render(<UsersPage />);
 
@@ -260,7 +260,7 @@ describe('UsersPage - User Management Permissions', () => {
     vi.mocked(useAuthStore).mockReturnValue({
       user: mockUsers[0], // Owner
       isAuthenticated: true,
-    } as any);
+    } as ReturnType<typeof useUserStore>);
 
     // Add another owner
     const usersWithTwoOwners = [
@@ -281,7 +281,7 @@ describe('UsersPage - User Management Permissions', () => {
     vi.mocked(useUserStore).mockReturnValue({
       ...mockUserStore,
       users: usersWithTwoOwners,
-    } as any);
+    } as ReturnType<typeof useUserStore>);
 
     render(<UsersPage />);
 
