@@ -10,7 +10,11 @@ import {
   InvoiceDetailPage,
   UsersPage,
   UserCreatePage,
+  UserDetailPage,
   TenantSettingsPage,
+  ReportsPage,
+  CustomersPage,
+  ProductsPage,
 } from './pages';
 
 function App() {
@@ -36,7 +40,11 @@ function App() {
           <Route path="invoices/:id" element={<InvoiceDetailPage />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="users/create" element={<UserCreatePage />} />
+          <Route path="users/:id" element={<UserDetailPage />} />
           <Route path="settings" element={<TenantSettingsPage />} />
+          <Route path="reports" element={<ReportsPage />} />
+          <Route path="customers" element={<CustomersPage />} />
+          <Route path="products" element={<ProductsPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
