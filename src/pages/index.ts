@@ -7,4 +7,5 @@ export * from './InvoiceEditPage';
 export * from './InvoiceDetailPage';
 export * from './UsersPage';
 export * from './UserCreatePage';
+export * from './UserDetailPage';
 export * from './TenantSettingsPage';

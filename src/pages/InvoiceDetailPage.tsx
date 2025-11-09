@@ -30,6 +30,7 @@ export const InvoiceDetailPage: React.FC = () => {
     setError
   } = useInvoiceStore();
   const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showMarkAsPaidModal, setShowMarkAsPaidModal] = useState(false);
   const [newStatus, setNewStatus] = useState<InvoiceStatus | ''>('');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -105,6 +106,28 @@ export const InvoiceDetailPage: React.FC = () => {
     setShowConfirmSendModal(false);
   };
 
+  const handleMarkAsPaidClick = () => {
+    setShowMarkAsPaidModal(true);
+    setPaymentMethod('');
+  };
+
+  const handleMarkAsPaidConfirm = async () => {
+    if (!id || !paymentMethod) return;
+
+    try {
+      await updateInvoiceStatus(id, {
+        status: InvoiceStatus.PAID,
+        payment_method: paymentMethod,
+      });
+      setShowMarkAsPaidModal(false);
+      setPaymentMethod('');
+      setSuccessMessage('Invoice marked as paid successfully');
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch {
+      // Error is handled in store
+    }
+  };
+
   const handleDelete = async () => {
     if (!id) return;
     if (window.confirm('Are you sure you want to delete this invoice?')) {
@@ -166,6 +189,11 @@ export const InvoiceDetailPage: React.FC = () => {
           {currentInvoice.status === InvoiceStatus.DRAFT && currentInvoice.customer_email && (
             <Button variant="primary" onClick={handleGenerateAndSend} isLoading={isLoading}>
               Send to Customer
+            </Button>
+          )}
+          {(currentInvoice.status === InvoiceStatus.SENT || currentInvoice.status === InvoiceStatus.OVERDUE) && (
+            <Button variant="primary" onClick={handleMarkAsPaidClick} isLoading={isLoading}>
+              Mark as Paid
             </Button>
           )}
           <Button variant="secondary" onClick={() => setShowStatusModal(true)}>
@@ -481,6 +509,68 @@ export const InvoiceDetailPage: React.FC = () => {
                 </Button>
                 <Button
                   onClick={handleCancelSend}
+                  variant="secondary"
+                  className="w-full sm:w-auto mt-3 sm:mt-0"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mark as Paid Modal */}
+      {showMarkAsPaidModal && currentInvoice && (
+        <div className="fixed z-20 inset-0 overflow-y-auto">
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setShowMarkAsPaidModal(false)}></div>
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900">
+                      Mark Invoice as Paid
+                    </h3>
+                    <div className="mt-4">
+                      <p className="text-sm text-gray-500 mb-4">
+                        Invoice <strong>{currentInvoice.invoice_number}</strong> will be marked as paid.
+                      </p>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Payment Method <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={paymentMethod}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="e.g., Credit Card, Cash, Bank Transfer"
+                        required
+                      />
+                      <p className="mt-2 text-xs text-gray-500">
+                        Please specify how the payment was received
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <Button
+                  onClick={handleMarkAsPaidConfirm}
+                  variant="primary"
+                  className="w-full sm:w-auto sm:ml-3"
+                  isLoading={isLoading}
+                  disabled={!paymentMethod}
+                >
+                  Confirm Payment
+                </Button>
+                <Button
+                  onClick={() => setShowMarkAsPaidModal(false)}
                   variant="secondary"
                   className="w-full sm:w-auto mt-3 sm:mt-0"
                 >

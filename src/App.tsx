@@ -10,6 +10,7 @@ import {
   InvoiceDetailPage,
   UsersPage,
   UserCreatePage,
+  UserDetailPage,
   TenantSettingsPage,
 } from './pages';
 
@@ -36,6 +37,7 @@ function App() {
           <Route path="invoices/:id" element={<InvoiceDetailPage />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="users/create" element={<UserCreatePage />} />
+          <Route path="users/:id" element={<UserDetailPage />} />
           <Route path="settings" element={<TenantSettingsPage />} />
         </Route>
 
