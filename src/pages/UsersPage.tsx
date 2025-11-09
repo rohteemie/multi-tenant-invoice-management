@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useUserStore } from '../store';
 import type { User, UserUpdate } from '../types';
 import { UserRole } from '../types';
-import { Loading, ErrorMessage, Button } from '../components/common';
+import { Loading, ErrorMessage, SuccessMessage, Button } from '../components/common';
 import { useAuthStore } from '../store';
 
 export const UsersPage: React.FC = () => {
@@ -13,6 +13,7 @@ export const UsersPage: React.FC = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [editFormData, setEditFormData] = useState<UserUpdate>({});
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Check if current user can manage users
   const canManageUsers = currentUser?.role === UserRole.OWNER || currentUser?.role === UserRole.ADMIN;
@@ -23,6 +24,12 @@ export const UsersPage: React.FC = () => {
   }, []);
 
   const handleEditClick = (user: User) => {
+    // Only owner can edit users
+    if (currentUser?.role !== UserRole.OWNER) {
+      setError('Only the organization owner can edit user details');
+      return;
+    }
+
     setSelectedUser(user);
     setEditFormData({
       full_name: user.full_name,
@@ -31,30 +38,52 @@ export const UsersPage: React.FC = () => {
       is_verified: user.is_verified,
     });
     setShowEditModal(true);
+    setSuccessMessage(null);
   };
 
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUser) return;
 
+    // Prevent owner from being downgraded or changed to another role by another owner
+    if (selectedUser.role === UserRole.OWNER && editFormData.role !== UserRole.OWNER) {
+      setError('Cannot change the role of an owner. Contact technical support for assistance.');
+      return;
+    }
+
     try {
       await updateUser(selectedUser.id, editFormData);
       setShowEditModal(false);
       setSelectedUser(null);
       setEditFormData({});
+      setSuccessMessage(`User ${selectedUser.full_name} updated successfully`);
     } catch {
       // Error is handled in store
     }
   };
 
   const handleDelete = async (user: User) => {
+    // Only owner can delete users
+    if (currentUser?.role !== UserRole.OWNER) {
+      setError('Only the organization owner can delete users');
+      return;
+    }
+
+    // Cannot delete yourself
     if (user.id === currentUser?.id) {
-      setError('Cannot delete your own account');
+      setError('Cannot delete your own account. To delete your account, delete the organization from Settings.');
+      return;
+    }
+
+    // Cannot delete another owner
+    if (user.role === UserRole.OWNER) {
+      setError('Cannot delete another owner. Contact the technical team or developer organization for assistance.');
       return;
     }
 
     setSelectedUser(user);
     setShowDeleteConfirm(true);
+    setSuccessMessage(null);
   };
 
   const handleDeleteConfirm = async () => {
@@ -63,9 +92,11 @@ export const UsersPage: React.FC = () => {
     try {
       await deleteUser(selectedUser.id);
       setShowDeleteConfirm(false);
+      setSuccessMessage(`User ${selectedUser.full_name} deleted successfully`);
       setSelectedUser(null);
     } catch {
       // Error is handled in store
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -95,6 +126,7 @@ export const UsersPage: React.FC = () => {
       </div>
 
       {error && <ErrorMessage message={error} onDismiss={() => setError(null)} />}
+      {successMessage && <SuccessMessage message={successMessage} onDismiss={() => setSuccessMessage(null)} />}
 
       <div className="card">
         <div className="overflow-x-auto">
@@ -161,14 +193,16 @@ export const UsersPage: React.FC = () => {
                     {canManageUsers && (
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end space-x-2">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => handleEditClick(user)}
-                          >
-                            Edit
-                          </Button>
-                          {isOwner && user.id !== currentUser?.id && (
+                          {isOwner && (
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => handleEditClick(user)}
+                            >
+                              Edit
+                            </Button>
+                          )}
+                          {isOwner && user.id !== currentUser?.id && user.role !== UserRole.OWNER && (
                             <Button
                               variant="danger"
                               size="sm"
@@ -211,17 +245,30 @@ export const UsersPage: React.FC = () => {
                     {canManageUsers && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700">Role</label>
-                        <select
-                          value={editFormData.role || ''}
-                          onChange={(e) => setEditFormData({ ...editFormData, role: e.target.value as UserRole })}
-                          className="mt-1 input-field"
-                          required
-                        >
-                          <option value={UserRole.ATTENDANT}>Attendant</option>
-                          <option value={UserRole.MANAGER}>Manager</option>
-                          <option value={UserRole.ADMIN}>Admin</option>
-                          {isOwner && <option value={UserRole.OWNER}>Owner</option>}
-                        </select>
+                        {selectedUser.role === UserRole.OWNER ? (
+                          <div>
+                            <input
+                              type="text"
+                              value="Owner"
+                              disabled
+                              className="mt-1 input-field bg-gray-100 cursor-not-allowed"
+                            />
+                            <p className="mt-1 text-xs text-gray-500">
+                              Owner role cannot be changed. Contact technical support for assistance.
+                            </p>
+                          </div>
+                        ) : (
+                          <select
+                            value={editFormData.role || ''}
+                            onChange={(e) => setEditFormData({ ...editFormData, role: e.target.value as UserRole })}
+                            className="mt-1 input-field"
+                            required
+                          >
+                            <option value={UserRole.ATTENDANT}>Attendant</option>
+                            <option value={UserRole.MANAGER}>Manager</option>
+                            <option value={UserRole.ADMIN}>Admin</option>
+                          </select>
+                        )}
                       </div>
                     )}
                     <div className="flex items-center">
