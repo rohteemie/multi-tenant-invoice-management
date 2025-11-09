@@ -9,3 +9,6 @@ export * from './UsersPage';
 export * from './UserCreatePage';
 export * from './UserDetailPage';
 export * from './TenantSettingsPage';
+export * from './ReportsPage';
+export * from './CustomersPage';
+export * from './ProductsPage';
