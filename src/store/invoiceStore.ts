@@ -32,7 +32,6 @@ interface InvoiceState {
   exportInvoices: (format: 'csv' | 'json', params?: InvoiceExportParams) => Promise<void>;
   sendInvoiceEmail: (id: string) => Promise<Invoice>;
   downloadInvoicePDF: (id: string) => Promise<void>;
-  uploadPDFAndSend: (id: string, pdfBlob: Blob, sendEmail: boolean) => Promise<Invoice>;
   setError: (error: string | null) => void;
 }
 
@@ -175,23 +174,6 @@ export const useInvoiceStore = create<InvoiceState>((set) => ({
       link.click();
       window.URL.revokeObjectURL(url);
       set({ isLoading: false });
-    } catch (error: unknown) {
-      const errorMessage = getErrorMessage(error);
-      set({ error: errorMessage, isLoading: false });
-      throw error;
-    }
-  },
-
-  uploadPDFAndSend: async (id: string, pdfBlob: Blob, sendEmail: boolean) => {
-    set({ isLoading: true, error: null });
-    try {
-      const invoice = await invoiceService.uploadPDFAndSend(id, pdfBlob, sendEmail);
-      set((state) => ({
-        invoices: state.invoices.map((inv) => (inv.id === id ? invoice : inv)),
-        currentInvoice: invoice,
-        isLoading: false,
-      }));
-      return invoice;
     } catch (error: unknown) {
       const errorMessage = getErrorMessage(error);
       set({ error: errorMessage, isLoading: false });

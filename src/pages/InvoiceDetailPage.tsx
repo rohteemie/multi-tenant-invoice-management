@@ -1,11 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useInvoiceStore } from '../store';
 import { Loading, ErrorMessage, Button } from '../components/common';
-import { InvoicePrintTemplate } from '../components/invoice';
 import { InvoiceStatus } from '../types';
 import { getValidInvoiceStatusTransitions, capitalizeFirstLetter } from '../utils';
-import { downloadPDF, generateAndUploadPDF } from '../utils/pdfUtils';
 
 /**
  * Calculates the total price for an invoice item
@@ -28,17 +26,14 @@ export const InvoiceDetailPage: React.FC = () => {
     updateInvoiceStatus, 
     deleteInvoice,
     sendInvoiceEmail,
-    uploadPDFAndSend,
+    downloadInvoicePDF,
     setError
   } = useInvoiceStore();
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [newStatus, setNewStatus] = useState<InvoiceStatus | ''>('');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [showConsentModal, setShowConsentModal] = useState(false);
-  const [consentAction, setConsentAction] = useState<'download' | 'upload-send' | null>(null);
   const [showConfirmSendModal, setShowConfirmSendModal] = useState(false);
-  const printTemplateRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (id) {
@@ -68,42 +63,11 @@ export const InvoiceDetailPage: React.FC = () => {
     }
   };
 
-  const handleSendEmail = async () => {
-    if (!id) return;
-    if (!currentInvoice?.customer_email) {
-      setError('Cannot send invoice: Customer email is missing');
-      return;
-    }
-    
-    if (window.confirm(`Send invoice to ${currentInvoice.customer_email}?`)) {
-      try {
-        await sendInvoiceEmail(id);
-        setSuccessMessage('Invoice sent successfully! Status updated to "sent"');
-        setTimeout(() => setSuccessMessage(null), 3000);
-      } catch {
-        // Error is handled in store
-      }
-    }
-  };
-
   const handleDownloadPDF = async () => {
-    if (!id || !currentInvoice || !printTemplateRef.current) return;
-    
-    // Show consent modal for GDPR compliance
-    setConsentAction('download');
-    setShowConsentModal(true);
-  };
-
-  const handleProceedWithDownload = async () => {
-    if (!id || !currentInvoice || !printTemplateRef.current) return;
-    
-    setShowConsentModal(false);
+    if (!id) return;
     
     try {
-      await downloadPDF(
-        printTemplateRef.current, 
-        `invoice-${currentInvoice.invoice_number}.pdf`
-      );
+      await downloadInvoicePDF(id);
       setSuccessMessage('Invoice PDF downloaded successfully');
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (error) {
@@ -112,62 +76,33 @@ export const InvoiceDetailPage: React.FC = () => {
   };
 
   const handleGenerateAndSend = async () => {
-    if (!id || !currentInvoice || !printTemplateRef.current) return;
+    if (!id || !currentInvoice) return;
     
     if (!currentInvoice.customer_email) {
       setError('Cannot send invoice: Customer email is missing');
       return;
     }
 
-    // Show consent modal for GDPR compliance
-    setConsentAction('upload-send');
-    setShowConsentModal(true);
-  };
-
-  const handleProceedWithUploadSend = async () => {
-    if (!id || !currentInvoice || !printTemplateRef.current) return;
-    
-    setShowConsentModal(false);
-    
-    // Show confirmation modal instead of window.confirm
+    // Show confirmation modal
     setShowConfirmSendModal(true);
   };
 
   const handleConfirmSend = async () => {
-    if (!id || !currentInvoice || !printTemplateRef.current) return;
+    if (!id) return;
     
     setShowConfirmSendModal(false);
     
     try {
-      await generateAndUploadPDF(
-        printTemplateRef.current,
-        id,
-        async (invoiceId: string, pdfBlob: Blob) => {
-          await uploadPDFAndSend(invoiceId, pdfBlob, true);
-        }
-      );
-      setSuccessMessage('Invoice PDF generated and sent successfully! Status updated to "sent"');
+      await sendInvoiceEmail(id);
+      setSuccessMessage('Invoice sent successfully! Status updated to "sent"');
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to generate and send PDF');
+      setError(error instanceof Error ? error.message : 'Failed to send invoice');
     }
   };
 
   const handleCancelSend = () => {
     setShowConfirmSendModal(false);
-  };
-
-  const handleConsentCancel = () => {
-    setShowConsentModal(false);
-    setConsentAction(null);
-  };
-
-  const handleConsentAccept = () => {
-    if (consentAction === 'download') {
-      handleProceedWithDownload();
-    } else if (consentAction === 'upload-send') {
-      handleProceedWithUploadSend();
-    }
   };
 
   const handleDelete = async () => {
@@ -229,14 +164,9 @@ export const InvoiceDetailPage: React.FC = () => {
             Download PDF
           </Button>
           {currentInvoice.status === InvoiceStatus.DRAFT && currentInvoice.customer_email && (
-            <>
-              <Button variant="primary" onClick={handleGenerateAndSend} isLoading={isLoading}>
-                Generate & Send PDF
-              </Button>
-              <Button variant="secondary" onClick={handleSendEmail} isLoading={isLoading}>
-                Send Email (Legacy)
-              </Button>
-            </>
+            <Button variant="primary" onClick={handleGenerateAndSend} isLoading={isLoading}>
+              Send to Customer
+            </Button>
           )}
           <Button variant="secondary" onClick={() => setShowStatusModal(true)}>
             Update Status
@@ -561,72 +491,6 @@ export const InvoiceDetailPage: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* GDPR Consent Modal */}
-      {showConsentModal && (
-        <div className="fixed z-20 inset-0 overflow-y-auto">
-          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={handleConsentCancel}></div>
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <div className="sm:flex sm:items-start">
-                  <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
-                    <svg className="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900">
-                      Data Processing Consent
-                    </h3>
-                    <div className="mt-2">
-                      <p className="text-sm text-gray-500">
-                        {consentAction === 'download' 
-                          ? 'This will generate a PDF containing invoice information including customer details, line items, and amounts. The PDF will be downloaded to your device.'
-                          : 'This will generate a PDF containing invoice information and upload it to our servers for email delivery to the customer. The PDF may be temporarily stored for audit purposes.'
-                        }
-                      </p>
-                      <p className="text-sm text-gray-500 mt-2">
-                        The PDF will contain:
-                      </p>
-                      <ul className="text-sm text-gray-500 list-disc list-inside mt-1">
-                        <li>Customer name and contact information</li>
-                        <li>Invoice details and line items</li>
-                        <li>Payment amounts and totals</li>
-                        <li>Invoice status and dates</li>
-                      </ul>
-                      <p className="text-sm text-gray-700 font-medium mt-3">
-                        Do you consent to proceed?
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <Button
-                  onClick={handleConsentAccept}
-                  variant="primary"
-                  className="w-full sm:w-auto sm:ml-3"
-                >
-                  I Consent
-                </Button>
-                <Button
-                  onClick={handleConsentCancel}
-                  variant="secondary"
-                  className="w-full sm:w-auto mt-3 sm:mt-0"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Hidden Print Template for PDF Generation */}
-      <div className="hidden">
-        {currentInvoice && <InvoicePrintTemplate ref={printTemplateRef} invoice={currentInvoice} />}
-      </div>
     </div>
   );
 };

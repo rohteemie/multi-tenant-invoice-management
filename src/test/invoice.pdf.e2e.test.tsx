@@ -6,7 +6,6 @@ import { InvoiceDetailPage } from '../pages/InvoiceDetailPage';
 import { useInvoiceStore } from '../store';
 import type { Invoice } from '../types';
 import { InvoiceStatus } from '../types';
-import * as pdfUtils from '../utils/pdfUtils';
 
 // Type for the invoice store
 type InvoiceStoreType = ReturnType<typeof useInvoiceStore>;
@@ -14,12 +13,6 @@ type InvoiceStoreType = ReturnType<typeof useInvoiceStore>;
 // Mock the store
 vi.mock('../store', () => ({
   useInvoiceStore: vi.fn(),
-}));
-
-// Mock the PDF utilities
-vi.mock('../utils/pdfUtils', () => ({
-  downloadPDF: vi.fn(),
-  generateAndUploadPDF: vi.fn(),
 }));
 
 // Mock useParams
@@ -75,7 +68,7 @@ describe('Invoice PDF Workflow E2E Tests', () => {
     deleteInvoice: vi.fn(),
     exportInvoices: vi.fn(),
     sendInvoiceEmail: vi.fn(),
-    uploadPDFAndSend: vi.fn(),
+    downloadInvoicePDF: vi.fn(),
     setError: vi.fn(),
     ...overrides,
   });
@@ -99,34 +92,15 @@ describe('Invoice PDF Workflow E2E Tests', () => {
     expect(screen.getByRole('button', { name: /download pdf/i })).toBeInTheDocument();
   });
 
-  it('should show GDPR consent modal when download PDF is clicked', async () => {
-    const user = userEvent.setup();
-
-    render(
-      <BrowserRouter>
-        <InvoiceDetailPage />
-      </BrowserRouter>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText('Invoice INV-001')).toBeInTheDocument();
-    });
-
-    const downloadButton = screen.getByRole('button', { name: /download pdf/i });
-    await user.click(downloadButton);
-
-    await waitFor(() => {
-      expect(screen.getByText('Data Processing Consent')).toBeInTheDocument();
-    });
-
-    expect(screen.getByText(/This will generate a PDF containing invoice information/i)).toBeInTheDocument();
-    expect(screen.getByText(/Customer name and contact information/i)).toBeInTheDocument();
-  });
-
-  it('should generate and download PDF when user consents', async () => {
+  it('should call backend PDF download when download button is clicked', async () => {
     const user = userEvent.setup();
     const mockDownloadPDF = vi.fn().mockResolvedValue(undefined);
-    vi.mocked(pdfUtils.downloadPDF).mockImplementation(mockDownloadPDF);
+
+    vi.mocked(useInvoiceStore).mockReturnValue(
+      createMockStore({
+        downloadInvoicePDF: mockDownloadPDF,
+      })
+    );
 
     render(
       <BrowserRouter>
@@ -142,30 +116,28 @@ describe('Invoice PDF Workflow E2E Tests', () => {
     const downloadButton = screen.getByRole('button', { name: /download pdf/i });
     await user.click(downloadButton);
 
-    // Wait for consent modal
+    // Verify backend PDF download was called
     await waitFor(() => {
-      expect(screen.getByText('Data Processing Consent')).toBeInTheDocument();
+      expect(mockDownloadPDF).toHaveBeenCalledWith('123');
     });
 
-    // Click consent button
-    const consentButton = screen.getByRole('button', { name: /i consent/i });
-    await user.click(consentButton);
-
-    // Verify PDF download was called
-    await waitFor(() => {
-      expect(mockDownloadPDF).toHaveBeenCalled();
-    });
-
-    // Verify success message
+    // Verify success message appears
     await waitFor(() => {
       expect(screen.getByText(/Invoice PDF downloaded successfully/i)).toBeInTheDocument();
     });
   });
 
-  it('should cancel PDF download when user cancels consent', async () => {
+  it('should handle PDF download error gracefully', async () => {
     const user = userEvent.setup();
-    const mockDownloadPDF = vi.fn();
-    vi.mocked(pdfUtils.downloadPDF).mockImplementation(mockDownloadPDF);
+    const mockDownloadPDF = vi.fn().mockRejectedValue(new Error('Download failed'));
+    const mockSetError = vi.fn();
+
+    vi.mocked(useInvoiceStore).mockReturnValue(
+      createMockStore({
+        downloadInvoicePDF: mockDownloadPDF,
+        setError: mockSetError,
+      })
+    );
 
     render(
       <BrowserRouter>
@@ -177,29 +149,15 @@ describe('Invoice PDF Workflow E2E Tests', () => {
       expect(screen.getByText('Invoice INV-001')).toBeInTheDocument();
     });
 
-    // Click download button
     const downloadButton = screen.getByRole('button', { name: /download pdf/i });
     await user.click(downloadButton);
 
-    // Wait for consent modal
     await waitFor(() => {
-      expect(screen.getByText('Data Processing Consent')).toBeInTheDocument();
-    });
-
-    // Click cancel button
-    const cancelButton = screen.getAllByRole('button', { name: /cancel/i })[0];
-    await user.click(cancelButton);
-
-    // Verify PDF download was NOT called
-    expect(mockDownloadPDF).not.toHaveBeenCalled();
-
-    // Verify modal is closed
-    await waitFor(() => {
-      expect(screen.queryByText('Data Processing Consent')).not.toBeInTheDocument();
+      expect(mockSetError).toHaveBeenCalledWith('Download failed');
     });
   });
 
-  it('should show generate & send PDF button for draft invoices with email', async () => {
+  it('should show "Send to Customer" button for draft invoices with email', async () => {
     render(
       <BrowserRouter>
         <InvoiceDetailPage />
@@ -210,17 +168,16 @@ describe('Invoice PDF Workflow E2E Tests', () => {
       expect(screen.getByText('Invoice INV-001')).toBeInTheDocument();
     });
 
-    expect(screen.getByRole('button', { name: /generate & send pdf/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /send to customer/i })).toBeInTheDocument();
   });
 
-  it('should upload PDF and send email when user consents and confirms', async () => {
-    const user = userEvent.setup();
-    const mockGenerateAndUploadPDF = vi.fn().mockResolvedValue(undefined);
-    const mockUploadPDFAndSend = vi.fn().mockResolvedValue(mockInvoice);
+  it('should not show "Send to Customer" button for non-draft invoices', async () => {
+    const sentInvoice = { ...mockInvoice, status: InvoiceStatus.SENT };
     
-    vi.mocked(pdfUtils.generateAndUploadPDF).mockImplementation(mockGenerateAndUploadPDF);
     vi.mocked(useInvoiceStore).mockReturnValue(
-      createMockStore({ uploadPDFAndSend: mockUploadPDFAndSend })
+      createMockStore({
+        currentInvoice: sentInvoice,
+      })
     );
 
     render(
@@ -233,51 +190,110 @@ describe('Invoice PDF Workflow E2E Tests', () => {
       expect(screen.getByText('Invoice INV-001')).toBeInTheDocument();
     });
 
-    // Click generate & send button
-    const generateButton = screen.getByRole('button', { name: /generate & send pdf/i });
-    await user.click(generateButton);
+    expect(screen.queryByRole('button', { name: /send to customer/i })).not.toBeInTheDocument();
+  });
 
-    // Wait for consent modal
+  it('should not show "Send to Customer" button for invoices without email', async () => {
+    const invoiceWithoutEmail = { ...mockInvoice, customer_email: '' };
+    
+    vi.mocked(useInvoiceStore).mockReturnValue(
+      createMockStore({
+        currentInvoice: invoiceWithoutEmail,
+      })
+    );
+
+    render(
+      <BrowserRouter>
+        <InvoiceDetailPage />
+      </BrowserRouter>
+    );
+
     await waitFor(() => {
-      expect(screen.getByText('Data Processing Consent')).toBeInTheDocument();
+      expect(screen.getByText('Invoice INV-001')).toBeInTheDocument();
     });
 
-    // Click consent button
-    const consentButton = screen.getByRole('button', { name: /i consent/i });
-    await user.click(consentButton);
+    expect(screen.queryByRole('button', { name: /send to customer/i })).not.toBeInTheDocument();
+  });
+
+  it('should show confirmation modal when send to customer is clicked', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <BrowserRouter>
+        <InvoiceDetailPage />
+      </BrowserRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Invoice INV-001')).toBeInTheDocument();
+    });
+
+    const sendButton = screen.getByRole('button', { name: /send to customer/i });
+    await user.click(sendButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Confirm Send Invoice/i)).toBeInTheDocument();
+      expect(screen.getByText(/Generate PDF and send invoice to/i)).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole('button', { name: /send invoice/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
+  });
+
+  it('should send invoice email when confirmed', async () => {
+    const user = userEvent.setup();
+    const mockSendEmail = vi.fn().mockResolvedValue({ ...mockInvoice, status: InvoiceStatus.SENT });
+
+    vi.mocked(useInvoiceStore).mockReturnValue(
+      createMockStore({
+        sendInvoiceEmail: mockSendEmail,
+      })
+    );
+
+    render(
+      <BrowserRouter>
+        <InvoiceDetailPage />
+      </BrowserRouter>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Invoice INV-001')).toBeInTheDocument();
+    });
+
+    // Click send button
+    const sendButton = screen.getByRole('button', { name: /send to customer/i });
+    await user.click(sendButton);
 
     // Wait for confirmation modal
     await waitFor(() => {
-      expect(screen.getByText('Confirm Send Invoice')).toBeInTheDocument();
+      expect(screen.getByText(/Generate PDF and send invoice to/i)).toBeInTheDocument();
     });
 
-    // Verify email is in the modal
-    const modal = screen.getByText('Confirm Send Invoice').closest('div[class*="inline-block"]');
-    expect(modal).toContainHTML('customer@example.com');
+    // Click confirm button
+    const confirmButton = screen.getByRole('button', { name: /send invoice/i });
+    await user.click(confirmButton);
 
-    // Click send invoice button
-    const sendButton = screen.getByRole('button', { name: /send invoice/i });
-    await user.click(sendButton);
-
-    // Verify upload and send was called
+    // Verify email was sent via backend
     await waitFor(() => {
-      expect(mockGenerateAndUploadPDF).toHaveBeenCalled();
+      expect(mockSendEmail).toHaveBeenCalledWith('123');
     });
 
     // Verify success message
     await waitFor(() => {
-      expect(screen.getByText(/Invoice PDF generated and sent successfully/i)).toBeInTheDocument();
+      expect(screen.getByText(/Invoice sent successfully/i)).toBeInTheDocument();
     });
   });
 
-  it('should handle PDF generation errors gracefully', async () => {
+  it('should handle send email error gracefully', async () => {
     const user = userEvent.setup();
-    const mockDownloadPDF = vi.fn().mockRejectedValue(new Error('PDF generation failed'));
-    vi.mocked(pdfUtils.downloadPDF).mockImplementation(mockDownloadPDF);
-
+    const mockSendEmail = vi.fn().mockRejectedValue(new Error('Send failed'));
     const mockSetError = vi.fn();
+
     vi.mocked(useInvoiceStore).mockReturnValue(
-      createMockStore({ setError: mockSetError })
+      createMockStore({
+        sendInvoiceEmail: mockSendEmail,
+        setError: mockSetError,
+      })
     );
 
     render(
@@ -290,28 +306,31 @@ describe('Invoice PDF Workflow E2E Tests', () => {
       expect(screen.getByText('Invoice INV-001')).toBeInTheDocument();
     });
 
-    // Click download button
-    const downloadButton = screen.getByRole('button', { name: /download pdf/i });
-    await user.click(downloadButton);
+    // Click send button
+    const sendButton = screen.getByRole('button', { name: /send to customer/i });
+    await user.click(sendButton);
 
-    // Wait for consent modal and accept
+    // Confirm
     await waitFor(() => {
-      expect(screen.getByText('Data Processing Consent')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /send invoice/i })).toBeInTheDocument();
     });
 
-    const consentButton = screen.getByRole('button', { name: /i consent/i });
-    await user.click(consentButton);
+    const confirmButton = screen.getByRole('button', { name: /send invoice/i });
+    await user.click(confirmButton);
 
-    // Verify error was set
     await waitFor(() => {
-      expect(mockSetError).toHaveBeenCalledWith('PDF generation failed');
+      expect(mockSetError).toHaveBeenCalledWith('Send failed');
     });
   });
 
-  it('should not show generate & send button for non-draft invoices', async () => {
-    const paidInvoice = { ...mockInvoice, status: InvoiceStatus.PAID };
+  it('should cancel send when cancel button is clicked', async () => {
+    const user = userEvent.setup();
+    const mockSendEmail = vi.fn();
+
     vi.mocked(useInvoiceStore).mockReturnValue(
-      createMockStore({ currentInvoice: paidInvoice })
+      createMockStore({
+        sendInvoiceEmail: mockSendEmail,
+      })
     );
 
     render(
@@ -324,41 +343,25 @@ describe('Invoice PDF Workflow E2E Tests', () => {
       expect(screen.getByText('Invoice INV-001')).toBeInTheDocument();
     });
 
-    expect(screen.queryByRole('button', { name: /generate & send pdf/i })).not.toBeInTheDocument();
-  });
+    // Click send button
+    const sendButton = screen.getByRole('button', { name: /send to customer/i });
+    await user.click(sendButton);
 
-  it('should not show generate & send button for invoices without email', async () => {
-    const invoiceNoEmail = { ...mockInvoice, customer_email: undefined };
-    vi.mocked(useInvoiceStore).mockReturnValue(
-      createMockStore({ currentInvoice: invoiceNoEmail })
-    );
-
-    render(
-      <BrowserRouter>
-        <InvoiceDetailPage />
-      </BrowserRouter>
-    );
-
+    // Wait for confirmation modal
     await waitFor(() => {
-      expect(screen.getByText('Invoice INV-001')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
     });
 
-    expect(screen.queryByRole('button', { name: /generate & send pdf/i })).not.toBeInTheDocument();
-  });
+    // Click cancel
+    const cancelButton = screen.getByRole('button', { name: /cancel/i });
+    await user.click(cancelButton);
 
-  it('should render print template in hidden div', async () => {
-    render(
-      <BrowserRouter>
-        <InvoiceDetailPage />
-      </BrowserRouter>
-    );
+    // Verify email was not sent
+    expect(mockSendEmail).not.toHaveBeenCalled();
 
+    // Verify modal is closed
     await waitFor(() => {
-      expect(screen.getByText('Invoice INV-001')).toBeInTheDocument();
+      expect(screen.queryByText(/Generate PDF and send invoice to/i)).not.toBeInTheDocument();
     });
-
-    // The print template should be present but hidden
-    const hiddenDiv = document.querySelector('.hidden');
-    expect(hiddenDiv).toBeInTheDocument();
   });
 });
