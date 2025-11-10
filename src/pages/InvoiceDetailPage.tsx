@@ -4,6 +4,7 @@ import { useInvoiceStore } from '../store';
 import { Loading, ErrorMessage, Button } from '../components/common';
 import { InvoiceStatus } from '../types';
 import { getValidInvoiceStatusTransitions, capitalizeFirstLetter } from '../utils';
+import { formatCurrencyWithSymbol } from '../utils/currencyUtils';
 
 /**
  * Calculates the total price for an invoice item
@@ -257,6 +258,12 @@ export const InvoiceDetailPage: React.FC = () => {
                 <dd className="mt-1 text-sm text-gray-900 break-words">{currentInvoice.customer_address}</dd>
               </div>
             )}
+            {currentInvoice.customer_vat_number && (
+              <div>
+                <dt className="text-sm font-medium text-gray-500">VAT/Tax Number</dt>
+                <dd className="mt-1 text-sm text-gray-900 break-words">{currentInvoice.customer_vat_number}</dd>
+              </div>
+            )}
           </dl>
         </div>
 
@@ -276,6 +283,12 @@ export const InvoiceDetailPage: React.FC = () => {
                 <dd className="mt-1 text-sm text-gray-900">
                   {new Date(currentInvoice.due_date).toLocaleDateString()}
                 </dd>
+              </div>
+            )}
+            {currentInvoice.currency && (
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Currency</dt>
+                <dd className="mt-1 text-sm text-gray-900">{currentInvoice.currency}</dd>
               </div>
             )}
             <div>
@@ -341,6 +354,9 @@ export const InvoiceDetailPage: React.FC = () => {
                   Unit Price
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Tax
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Total
                 </th>
               </tr>
@@ -350,9 +366,23 @@ export const InvoiceDetailPage: React.FC = () => {
                 <tr key={item.id}>
                   <td className="px-6 py-4 text-sm text-gray-900">{item.description}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">{item.quantity}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900">${Number(item.unit_price).toFixed(2)}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    ${calculateItemTotal(item)}
+                    {currentInvoice.currency 
+                      ? formatCurrencyWithSymbol(Number(item.unit_price), currentInvoice.currency)
+                      : `$${Number(item.unit_price).toFixed(2)}`
+                    }
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900">
+                    {item.tax_rate ? `${item.tax_rate}%` : '-'}
+                    {item.tax_amount ? ` (${currentInvoice.currency 
+                      ? formatCurrencyWithSymbol(Number(item.tax_amount), currentInvoice.currency)
+                      : `$${Number(item.tax_amount).toFixed(2)}`})` : ''}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900">
+                    {currentInvoice.currency 
+                      ? formatCurrencyWithSymbol(Number(calculateItemTotal(item)), currentInvoice.currency)
+                      : `$${calculateItemTotal(item)}`
+                    }
                   </td>
                 </tr>
               ))}
@@ -365,19 +395,39 @@ export const InvoiceDetailPage: React.FC = () => {
             <div className="w-64 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Subtotal</span>
-                <span className="text-gray-900">${Number(currentInvoice.subtotal).toFixed(2)}</span>
+                <span className="text-gray-900">
+                  {currentInvoice.currency 
+                    ? formatCurrencyWithSymbol(Number(currentInvoice.subtotal), currentInvoice.currency)
+                    : `$${Number(currentInvoice.subtotal).toFixed(2)}`
+                  }
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Tax</span>
-                <span className="text-gray-900">${Number(currentInvoice.tax_amount).toFixed(2)}</span>
+                <span className="text-gray-900">
+                  {currentInvoice.currency 
+                    ? formatCurrencyWithSymbol(Number(currentInvoice.tax_amount), currentInvoice.currency)
+                    : `$${Number(currentInvoice.tax_amount).toFixed(2)}`
+                  }
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Discount</span>
-                <span className="text-gray-900">-${Number(currentInvoice.discount_amount).toFixed(2)}</span>
+                <span className="text-gray-900">
+                  -{currentInvoice.currency 
+                    ? formatCurrencyWithSymbol(Number(currentInvoice.discount_amount), currentInvoice.currency)
+                    : `$${Number(currentInvoice.discount_amount).toFixed(2)}`
+                  }
+                </span>
               </div>
               <div className="flex justify-between text-lg font-bold border-t pt-2">
                 <span>Total</span>
-                <span>${Number(currentInvoice.total_amount).toFixed(2)}</span>
+                <span>
+                  {currentInvoice.currency 
+                    ? formatCurrencyWithSymbol(Number(currentInvoice.total_amount), currentInvoice.currency)
+                    : `$${Number(currentInvoice.total_amount).toFixed(2)}`
+                  }
+                </span>
               </div>
             </div>
           </div>

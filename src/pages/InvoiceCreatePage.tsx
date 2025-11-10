@@ -1,26 +1,34 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useInvoiceStore } from '../store';
-import { Button, ErrorMessage } from '../components/common';
-import type { InvoiceItemCreate } from '../types';
+import { Button, ErrorMessage, CurrencySelector } from '../components/common';
+import type { InvoiceItemCreate, Currency } from '../types';
+import { useTenantStore } from '../store/tenantStore';
+import { formatCurrencyWithSymbol } from '../utils/currencyUtils';
 
 export const InvoiceCreatePage: React.FC = () => {
   const navigate = useNavigate();
   const { createInvoice, isLoading, error, setError } = useInvoiceStore();
+  const { currentTenant } = useTenantStore();
 
   const [formData, setFormData] = useState({
     customer_name: '',
     customer_email: '',
     customer_phone: '',
     customer_address: '',
+    customer_vat_number: '',
     branch_id: '',
     issue_date: new Date().toISOString().split('T')[0],
     due_date: '',
     notes: '',
   });
 
+  const [currency, setCurrency] = useState<Currency | undefined>(
+    currentTenant?.default_currency || 'USD'
+  );
+
   const [items, setItems] = useState<InvoiceItemCreate[]>([
-    { description: '', quantity: 1, unit_price: 0 },
+    { description: '', quantity: 1, unit_price: 0, tax_rate: 0 },
   ]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -40,17 +48,13 @@ export const InvoiceCreatePage: React.FC = () => {
   };
 
   const addItem = () => {
-    setItems([...items, { description: '', quantity: 1, unit_price: 0 }]);
+    setItems([...items, { description: '', quantity: 1, unit_price: 0, tax_rate: 0 }]);
   };
 
   const removeItem = (index: number) => {
     if (items.length > 1) {
       setItems(items.filter((_, i) => i !== index));
     }
-  };
-
-  const calculateTotal = () => {
-    return items.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,6 +69,7 @@ export const InvoiceCreatePage: React.FC = () => {
     try {
       const invoice = await createInvoice({
         ...formData,
+        currency,
         items,
       });
       navigate(`/invoices/${invoice.id}`);
@@ -160,6 +165,21 @@ export const InvoiceCreatePage: React.FC = () => {
                 className="mt-1 input-field"
               />
             </div>
+
+            <div>
+              <label htmlFor="customer_vat_number" className="block text-sm font-medium text-gray-700">
+                VAT/Tax Number
+              </label>
+              <input
+                id="customer_vat_number"
+                name="customer_vat_number"
+                type="text"
+                value={formData.customer_vat_number}
+                onChange={handleChange}
+                className="mt-1 input-field"
+                placeholder="e.g., GB123456789"
+              />
+            </div>
           </div>
         </div>
 
@@ -196,6 +216,13 @@ export const InvoiceCreatePage: React.FC = () => {
               />
             </div>
 
+            <CurrencySelector
+              value={currency}
+              onChange={setCurrency}
+              label="Currency"
+              required
+            />
+
             <div className="sm:col-span-2">
               <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
                 Notes
@@ -224,7 +251,7 @@ export const InvoiceCreatePage: React.FC = () => {
           <div className="space-y-4">
             {items.map((item, index) => (
               <div key={index} className="grid grid-cols-12 gap-4 items-end">
-                <div className="col-span-12 sm:col-span-5">
+                <div className="col-span-12 sm:col-span-4">
                   <label className="block text-sm font-medium text-gray-700">
                     Description *
                   </label>
@@ -237,7 +264,7 @@ export const InvoiceCreatePage: React.FC = () => {
                   />
                 </div>
 
-                <div className="col-span-6 sm:col-span-2">
+                <div className="col-span-4 sm:col-span-2">
                   <label className="block text-sm font-medium text-gray-700">
                     Quantity *
                   </label>
@@ -252,7 +279,7 @@ export const InvoiceCreatePage: React.FC = () => {
                   />
                 </div>
 
-                <div className="col-span-6 sm:col-span-2">
+                <div className="col-span-4 sm:col-span-2">
                   <label className="block text-sm font-medium text-gray-700">
                     Unit Price *
                   </label>
@@ -267,16 +294,36 @@ export const InvoiceCreatePage: React.FC = () => {
                   />
                 </div>
 
-                <div className="col-span-6 sm:col-span-2">
+                <div className="col-span-4 sm:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Tax (%)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    value={item.tax_rate || 0}
+                    onChange={(e) => handleItemChange(index, 'tax_rate', e.target.value)}
+                    className="mt-1 input-field"
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div className="col-span-5 sm:col-span-1">
                   <label className="block text-sm font-medium text-gray-700">
                     Total
                   </label>
                   <div className="mt-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm">
-                    ${(item.quantity * item.unit_price).toFixed(2)}
+                    {(() => {
+                      const subtotal = item.quantity * item.unit_price;
+                      const tax = (subtotal * (item.tax_rate || 0)) / 100;
+                      return (subtotal + tax).toFixed(2);
+                    })()}
                   </div>
                 </div>
 
-                <div className="col-span-6 sm:col-span-1">
+                <div className="col-span-3 sm:col-span-1">
                   {items.length > 1 && (
                     <button
                       type="button"
@@ -295,11 +342,34 @@ export const InvoiceCreatePage: React.FC = () => {
 
           <div className="mt-6 border-t pt-4">
             <div className="flex justify-end">
-              <div className="text-right">
-                <div className="text-sm text-gray-500">Total Amount</div>
-                <div className="text-2xl font-bold text-gray-900">
-                  ${calculateTotal().toFixed(2)}
-                </div>
+              <div className="text-right space-y-2 min-w-[250px]">
+                {(() => {
+                  const subtotal = items.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
+                  const totalTax = items.reduce((sum, item) => {
+                    const itemSubtotal = item.quantity * item.unit_price;
+                    return sum + (itemSubtotal * (item.tax_rate || 0)) / 100;
+                  }, 0);
+                  const total = subtotal + totalTax;
+
+                  return (
+                    <>
+                      <div className="flex justify-between text-sm text-gray-600">
+                        <span>Subtotal:</span>
+                        <span>{currency ? formatCurrencyWithSymbol(subtotal, currency) : `$${subtotal.toFixed(2)}`}</span>
+                      </div>
+                      {totalTax > 0 && (
+                        <div className="flex justify-between text-sm text-gray-600">
+                          <span>Tax:</span>
+                          <span>{currency ? formatCurrencyWithSymbol(totalTax, currency) : `$${totalTax.toFixed(2)}`}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t">
+                        <span>Total:</span>
+                        <span>{currency ? formatCurrencyWithSymbol(total, currency) : `$${total.toFixed(2)}`}</span>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             </div>
           </div>
