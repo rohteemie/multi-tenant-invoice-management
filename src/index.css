@@ -23,3 +23,17 @@
     @apply bg-white rounded-lg shadow-md p-6;
   }
 }
+
+@layer utilities {
+  /* Ensure tables are scrollable on mobile */
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Ensure proper word breaking for long content */
+  .break-words {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+  }
+}

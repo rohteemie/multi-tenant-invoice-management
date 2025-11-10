@@ -182,7 +182,7 @@ export const InvoiceDetailPage: React.FC = () => {
             {currentInvoice.status}
           </span>
         </div>
-        <div className="mt-4 flex flex-wrap gap-3 md:mt-0 md:ml-4 no-print">
+        <div className="mt-4 flex flex-wrap gap-2 md:mt-0 md:ml-4 no-print">
           <Button variant="secondary" onClick={handleDownloadPDF} isLoading={isLoading}>
             Download PDF
           </Button>
@@ -237,24 +237,24 @@ export const InvoiceDetailPage: React.FC = () => {
           <dl className="space-y-3">
             <div>
               <dt className="text-sm font-medium text-gray-500">Name</dt>
-              <dd className="mt-1 text-sm text-gray-900">{currentInvoice.customer_name}</dd>
+              <dd className="mt-1 text-sm text-gray-900 break-words">{currentInvoice.customer_name}</dd>
             </div>
             {currentInvoice.customer_email && (
               <div>
                 <dt className="text-sm font-medium text-gray-500">Email</dt>
-                <dd className="mt-1 text-sm text-gray-900">{currentInvoice.customer_email}</dd>
+                <dd className="mt-1 text-sm text-gray-900 break-words">{currentInvoice.customer_email}</dd>
               </div>
             )}
             {currentInvoice.customer_phone && (
               <div>
                 <dt className="text-sm font-medium text-gray-500">Phone</dt>
-                <dd className="mt-1 text-sm text-gray-900">{currentInvoice.customer_phone}</dd>
+                <dd className="mt-1 text-sm text-gray-900 break-words">{currentInvoice.customer_phone}</dd>
               </div>
             )}
             {currentInvoice.customer_address && (
               <div>
                 <dt className="text-sm font-medium text-gray-500">Address</dt>
-                <dd className="mt-1 text-sm text-gray-900">{currentInvoice.customer_address}</dd>
+                <dd className="mt-1 text-sm text-gray-900 break-words">{currentInvoice.customer_address}</dd>
               </div>
             )}
           </dl>
@@ -280,7 +280,7 @@ export const InvoiceDetailPage: React.FC = () => {
             )}
             <div>
               <dt className="text-sm font-medium text-gray-500">Created By</dt>
-              <dd className="mt-1 text-sm text-gray-900">{currentInvoice.creator_id}</dd>
+              <dd className="mt-1 text-sm text-gray-900 break-words">{currentInvoice.creator_id}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-gray-500">Created At</dt>
@@ -291,7 +291,7 @@ export const InvoiceDetailPage: React.FC = () => {
             {currentInvoice.updater_id && (
               <div>
                 <dt className="text-sm font-medium text-gray-500">Last Updated By</dt>
-                <dd className="mt-1 text-sm text-gray-900">{currentInvoice.updater_id}</dd>
+                <dd className="mt-1 text-sm text-gray-900 break-words">{currentInvoice.updater_id}</dd>
               </div>
             )}
             <div>
@@ -303,7 +303,7 @@ export const InvoiceDetailPage: React.FC = () => {
             {currentInvoice.payment_method && (
               <div>
                 <dt className="text-sm font-medium text-gray-500">Payment Method</dt>
-                <dd className="mt-1 text-sm text-gray-900">{currentInvoice.payment_method}</dd>
+                <dd className="mt-1 text-sm text-gray-900 break-words">{currentInvoice.payment_method}</dd>
               </div>
             )}
             {currentInvoice.paid_at && (
@@ -317,7 +317,7 @@ export const InvoiceDetailPage: React.FC = () => {
             {currentInvoice.branch_id && (
               <div>
                 <dt className="text-sm font-medium text-gray-500">Branch ID</dt>
-                <dd className="mt-1 text-sm text-gray-900">{currentInvoice.branch_id}</dd>
+                <dd className="mt-1 text-sm text-gray-900 break-words">{currentInvoice.branch_id}</dd>
               </div>
             )}
           </dl>
@@ -397,7 +397,7 @@ export const InvoiceDetailPage: React.FC = () => {
         <div className="fixed z-10 inset-0 overflow-y-auto">
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={handleCloseModal}></div>
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full mx-4">
               <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Update Invoice Status</h3>
                 <div className="space-y-4">
@@ -447,11 +447,11 @@ export const InvoiceDetailPage: React.FC = () => {
                   )}
                 </div>
               </div>
-              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-3">
                 <Button
                   onClick={handleStatusUpdate}
                   variant="primary"
-                  className="w-full sm:w-auto sm:ml-3"
+                  className="w-full sm:w-auto"
                   isLoading={isLoading}
                   disabled={!newStatus || (newStatus === InvoiceStatus.PAID && !paymentMethod)}
                 >
@@ -475,7 +475,7 @@ export const InvoiceDetailPage: React.FC = () => {
         <div className="fixed z-20 inset-0 overflow-y-auto">
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={handleCancelSend}></div>
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full mx-4">
               <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
                   <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -489,7 +489,7 @@ export const InvoiceDetailPage: React.FC = () => {
                     </h3>
                     <div className="mt-2">
                       <p className="text-sm text-gray-500">
-                        Generate PDF and send invoice to <strong>{currentInvoice.customer_email}</strong>?
+                        Generate PDF and send invoice to <strong className="break-words">{currentInvoice.customer_email}</strong>?
                       </p>
                       <p className="text-sm text-gray-500 mt-2">
                         The invoice status will be updated to "sent" after successful delivery.
@@ -498,11 +498,11 @@ export const InvoiceDetailPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-3">
                 <Button
                   onClick={handleConfirmSend}
                   variant="primary"
-                  className="w-full sm:w-auto sm:ml-3"
+                  className="w-full sm:w-auto"
                   isLoading={isLoading}
                 >
                   Send Invoice
@@ -525,7 +525,7 @@ export const InvoiceDetailPage: React.FC = () => {
         <div className="fixed z-20 inset-0 overflow-y-auto">
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setShowMarkAsPaidModal(false)}></div>
-            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full mx-4">
               <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
                   <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -539,7 +539,7 @@ export const InvoiceDetailPage: React.FC = () => {
                     </h3>
                     <div className="mt-4">
                       <p className="text-sm text-gray-500 mb-4">
-                        Invoice <strong>{currentInvoice.invoice_number}</strong> will be marked as paid.
+                        Invoice <strong className="break-words">{currentInvoice.invoice_number}</strong> will be marked as paid.
                       </p>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Payment Method <span className="text-red-500">*</span>
@@ -559,11 +559,11 @@ export const InvoiceDetailPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse gap-3">
                 <Button
                   onClick={handleMarkAsPaidConfirm}
                   variant="primary"
-                  className="w-full sm:w-auto sm:ml-3"
+                  className="w-full sm:w-auto"
                   isLoading={isLoading}
                   disabled={!paymentMethod}
                 >

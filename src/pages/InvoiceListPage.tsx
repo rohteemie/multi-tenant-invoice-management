@@ -60,7 +60,7 @@ export const InvoiceListPage: React.FC = () => {
             Invoices
           </h2>
         </div>
-        <div className="mt-4 flex space-x-3 md:mt-0 md:ml-4">
+        <div className="mt-4 flex flex-wrap gap-3 md:mt-0 md:ml-4">
           <Button variant="secondary" onClick={() => handleExport('csv')}>
             Export CSV
           </Button>
