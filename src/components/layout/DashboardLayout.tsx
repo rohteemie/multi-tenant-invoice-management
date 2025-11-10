@@ -51,6 +51,16 @@ const availableFeatures = [
     available: true,
   },
   {
+    title: 'Multi-Currency Support',
+    description: 'Create and manage invoices in multiple currencies (USD, EUR, GBP, NGN, JPY, CAD, AUD) with proper formatting',
+    available: true,
+  },
+  {
+    title: 'Tax/VAT Management',
+    description: 'Apply per-line-item tax rates, calculate tax breakdowns, and collect customer VAT numbers',
+    available: true,
+  },
+  {
     title: 'Advanced Reports',
     description: 'Custom report generation with data visualization and insights',
     available: false,
@@ -73,11 +83,6 @@ const availableFeatures = [
   {
     title: 'Payment Gateway Integration',
     description: 'Accept online payments directly through the platform',
-    available: false,
-  },
-  {
-    title: 'Multi-Currency Support',
-    description: 'Create invoices in different currencies',
     available: false,
   },
 ];
