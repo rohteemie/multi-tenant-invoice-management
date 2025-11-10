@@ -4,3 +4,5 @@ export * from './SuccessMessage';
 export * from './Button';
 export * from './FeatureNotAvailable';
 export * from './FeatureHelp';
+export * from './CurrencySelector';
+export * from './TaxRateInput';
