@@ -182,7 +182,7 @@ export const InvoiceDetailPage: React.FC = () => {
             {currentInvoice.status}
           </span>
         </div>
-        <div className="mt-4 flex flex-wrap gap-3 md:mt-0 md:ml-4 no-print">
+        <div className="mt-4 flex flex-wrap gap-2 md:mt-0 md:ml-4 no-print">
           <Button variant="secondary" onClick={handleDownloadPDF} isLoading={isLoading}>
             Download PDF
           </Button>
