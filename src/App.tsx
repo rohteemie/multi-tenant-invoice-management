@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute, DashboardLayout } from './components/layout';
+import { InstallPWA } from './components/pwa';
 import {
   LoginPage,
   RegisterPage,
@@ -49,6 +50,7 @@ function App() {
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
+      <InstallPWA />
     </Router>
   );
 }
