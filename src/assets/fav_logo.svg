@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Invoice badge logo">
+  <defs>
+    <!-- Navy → Soft Blue gradient -->
+    <linearGradient id="navyBlue" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#0A1A36"/>
+      <stop offset="1" stop-color="#1F4A8A"/>
+    </linearGradient>
+
+    <!-- Rich Gold -->
+    <linearGradient id="richGold" x1="0" x2="1">
+      <stop offset="0" stop-color="#F5D48A"/>
+      <stop offset="1" stop-color="#C49B32"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded background -->
+  <rect x="12" y="12" width="232" height="232" rx="32" fill="url(#navyBlue)" opacity="0.18"/>
+
+  <!-- Stacked invoice sheets (multi-tenant layering) -->
+  <g transform="translate(56,48)">
+    <rect x="0" y="0" width="144" height="32" rx="6" fill="#ffffff"/>
+    <rect x="12" y="26" width="120" height="32" rx="6" fill="#E7ECF6"/>
+    <rect x="24" y="52" width="96" height="32" rx="6" fill="#CFD9EC"/>
+  </g>
+
+  <!-- Gold shield (trust / verified / payment) -->
+  <g transform="translate(168,52)">
+    <path d="M20 8 l18 10 v18 a20 20 0 0 1 -36 0 v-18z" fill="url(#richGold)" stroke="#9A7423" stroke-width="1"/>
+    <path d="M14 20 l6 6 l12 -12" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
