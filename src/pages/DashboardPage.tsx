@@ -1,22 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { analyticsService } from '../services';
-import type { InvoiceSummary, RevenueByStatus } from '../types';
+import type { InvoiceSummary, RevenueByStatus, Currency } from '../types';
 import { Loading, ErrorMessage } from '../components/common';
 import { useAuthStore } from '../store';
-import { formatCurrency } from '../utils';
+import { useTenantStore } from '../store/tenantStore';
+import { formatCurrencyWithSymbol } from '../utils/currencyUtils';
 import { getErrorMessage } from '../types/error';
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuthStore();
+  const { currentTenant, fetchTenantById } = useTenantStore();
   const [summary, setSummary] = useState<InvoiceSummary | null>(null);
   const [revenueData, setRevenueData] = useState<RevenueByStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Get the display currency from tenant's default or fallback to USD
+  const displayCurrency: Currency = currentTenant?.default_currency || 'USD';
+
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
+        // Fetch tenant information if we have a user with tenant_id
+        if (user?.tenant_id && !currentTenant) {
+          await fetchTenantById(user.tenant_id);
+        }
+
         const [summaryData, revenueByStatus] = await Promise.all([
           analyticsService.getInvoiceSummary(),
           analyticsService.getRevenueByStatus(),
@@ -31,7 +41,7 @@ export const DashboardPage: React.FC = () => {
     };
 
     fetchAnalytics();
-  }, []);
+  }, [user, currentTenant, fetchTenantById]);
 
   if (isLoading) {
     return <Loading size="lg" text="Loading dashboard..." />;
@@ -95,7 +105,7 @@ export const DashboardPage: React.FC = () => {
               <dl>
                 <dt className="text-sm font-medium text-gray-500 truncate">Total Revenue</dt>
                 <dd className="text-lg font-semibold text-gray-900">
-                  ${formatCurrency(summary?.total_revenue)}
+                  {formatCurrencyWithSymbol(Number(summary?.total_revenue || 0), displayCurrency)}
                 </dd>
               </dl>
             </div>
@@ -115,7 +125,7 @@ export const DashboardPage: React.FC = () => {
               <dl>
                 <dt className="text-sm font-medium text-gray-500 truncate">Pending Amount</dt>
                 <dd className="text-lg font-semibold text-gray-900">
-                  ${formatCurrency(summary?.pending_amount)}
+                  {formatCurrencyWithSymbol(Number(summary?.pending_amount || 0), displayCurrency)}
                 </dd>
               </dl>
             </div>
@@ -135,7 +145,7 @@ export const DashboardPage: React.FC = () => {
               <dl>
                 <dt className="text-sm font-medium text-gray-500 truncate">Overdue</dt>
                 <dd className="text-lg font-semibold text-gray-900">
-                  ${formatCurrency(summary?.overdue_amount)}
+                  {formatCurrencyWithSymbol(Number(summary?.overdue_amount || 0), displayCurrency)}
                 </dd>
               </dl>
             </div>
@@ -168,7 +178,12 @@ export const DashboardPage: React.FC = () => {
 
       {/* Revenue by Status */}
       <div className="card">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Revenue by Status</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Revenue by Status
+          <span className="ml-2 text-xs font-normal text-gray-500">
+            (Amounts shown in {displayCurrency})
+          </span>
+        </h3>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -201,12 +216,16 @@ export const DashboardPage: React.FC = () => {
                     {item.count}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${formatCurrency(item.total_amount)}
+                    {formatCurrencyWithSymbol(Number(item.total_amount || 0), displayCurrency)}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+        <div className="mt-2 text-xs text-gray-500">
+          Note: Amounts from different currencies are aggregated for display purposes. 
+          Individual invoices maintain their original currency.
         </div>
       </div>
 
