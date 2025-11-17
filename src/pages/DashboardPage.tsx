@@ -1,22 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { analyticsService } from '../services';
-import type { InvoiceSummary, RevenueByStatus } from '../types';
+import type { InvoiceSummary, RevenueByStatus, Currency } from '../types';
 import { Loading, ErrorMessage } from '../components/common';
 import { useAuthStore } from '../store';
-import { formatCurrency } from '../utils';
+import { useTenantStore } from '../store/tenantStore';
+import { formatCurrencyWithSymbol } from '../utils/currencyUtils';
 import { getErrorMessage } from '../types/error';
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuthStore();
+  const { currentTenant, fetchTenantById } = useTenantStore();
   const [summary, setSummary] = useState<InvoiceSummary | null>(null);
   const [revenueData, setRevenueData] = useState<RevenueByStatus[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Get the display currency from tenant's default or fallback to USD
+  const displayCurrency: Currency = currentTenant?.default_currency || 'USD';
+
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
+        // Fetch tenant information if we have a user with tenant_id
+        if (user?.tenant_id && !currentTenant) {
+          await fetchTenantById(user.tenant_id);
+        }
+
         const [summaryData, revenueByStatus] = await Promise.all([
           analyticsService.getInvoiceSummary(),
           analyticsService.getRevenueByStatus(),
@@ -31,7 +41,7 @@ export const DashboardPage: React.FC = () => {
     };
 
     fetchAnalytics();
-  }, []);
+  }, [user, currentTenant, fetchTenantById]);
 
   if (isLoading) {
     return <Loading size="lg" text="Loading dashboard..." />;
@@ -59,6 +69,30 @@ export const DashboardPage: React.FC = () => {
           >
             Create Invoice
           </Link>
+        </div>
+      </div>
+
+      {/* Multi-Currency Warning */}
+      <div className="rounded-md bg-yellow-50 border border-yellow-200 p-4">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-yellow-800">
+              Multi-Currency Analytics Limitation
+            </h3>
+            <div className="mt-2 text-sm text-yellow-700">
+              <p>
+                Analytics currently aggregate amounts across all currencies without conversion. 
+                For accurate multi-currency reporting, the backend needs to be updated to either 
+                group by currency or convert to {displayCurrency}. Amounts below are shown with 
+                the {displayCurrency} symbol but may include mixed currencies.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -93,9 +127,11 @@ export const DashboardPage: React.FC = () => {
             </div>
             <div className="ml-5 w-0 flex-1">
               <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">Total Revenue</dt>
+                <dt className="text-sm font-medium text-gray-500 truncate">
+                  Total Revenue (approx. {displayCurrency})
+                </dt>
                 <dd className="text-lg font-semibold text-gray-900">
-                  ${formatCurrency(summary?.total_revenue)}
+                  {formatCurrencyWithSymbol(Number(summary?.total_revenue || 0), displayCurrency)}
                 </dd>
               </dl>
             </div>
@@ -113,9 +149,11 @@ export const DashboardPage: React.FC = () => {
             </div>
             <div className="ml-5 w-0 flex-1">
               <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">Pending Amount</dt>
+                <dt className="text-sm font-medium text-gray-500 truncate">
+                  Pending Amount (approx. {displayCurrency})
+                </dt>
                 <dd className="text-lg font-semibold text-gray-900">
-                  ${formatCurrency(summary?.pending_amount)}
+                  {formatCurrencyWithSymbol(Number(summary?.pending_amount || 0), displayCurrency)}
                 </dd>
               </dl>
             </div>
@@ -133,9 +171,11 @@ export const DashboardPage: React.FC = () => {
             </div>
             <div className="ml-5 w-0 flex-1">
               <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">Overdue</dt>
+                <dt className="text-sm font-medium text-gray-500 truncate">
+                  Overdue (approx. {displayCurrency})
+                </dt>
                 <dd className="text-lg font-semibold text-gray-900">
-                  ${formatCurrency(summary?.overdue_amount)}
+                  {formatCurrencyWithSymbol(Number(summary?.overdue_amount || 0), displayCurrency)}
                 </dd>
               </dl>
             </div>
@@ -168,7 +208,12 @@ export const DashboardPage: React.FC = () => {
 
       {/* Revenue by Status */}
       <div className="card">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Revenue by Status</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Revenue by Status
+          <span className="ml-2 text-xs font-normal text-gray-500">
+            (Approx. {displayCurrency} - mixed currencies)
+          </span>
+        </h3>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -201,12 +246,19 @@ export const DashboardPage: React.FC = () => {
                     {item.count}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${formatCurrency(item.total_amount)}
+                    {formatCurrencyWithSymbol(Number(item.total_amount || 0), displayCurrency)}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+        <div className="mt-3 rounded-md bg-blue-50 border border-blue-200 p-3">
+          <p className="text-sm text-blue-700">
+            <strong>Note:</strong> The backend currently aggregates amounts across all currencies without conversion. 
+            For accurate multi-currency analytics, backend updates are required to either group by currency or 
+            convert all amounts to {displayCurrency}. Individual invoices maintain their original currency.
+          </p>
         </div>
       </div>
 
