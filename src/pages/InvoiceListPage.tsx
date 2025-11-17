@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useInvoiceStore } from '../store';
 import { Loading, ErrorMessage, Button } from '../components/common';
 import { InvoiceStatus } from '../types';
+import { formatCurrencyWithSymbol } from '../utils/currencyUtils';
 
 export const InvoiceListPage: React.FC = () => {
   const { invoices, isLoading, error, fetchInvoices, exportInvoices, deleteInvoice } = useInvoiceStore();
@@ -183,7 +184,10 @@ export const InvoiceListPage: React.FC = () => {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      ${Number(invoice.total_amount).toFixed(2)}
+                      {formatCurrencyWithSymbol(
+                        Number(invoice.total_amount),
+                        invoice.currency || 'USD'
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span

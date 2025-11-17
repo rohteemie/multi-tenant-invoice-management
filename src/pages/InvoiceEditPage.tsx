@@ -4,6 +4,7 @@ import { useInvoiceStore } from '../store';
 import { Button, ErrorMessage, Loading, CurrencySelector } from '../components/common';
 import type { InvoiceItemCreate, Currency } from '../types';
 import { InvoiceStatus } from '../types';
+import { formatCurrencyWithSymbol } from '../utils/currencyUtils';
 
 export const InvoiceEditPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -436,7 +437,10 @@ export const InvoiceEditPage: React.FC = () => {
                     Total
                   </label>
                   <div className="mt-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm">
-                    ${(item.quantity * item.unit_price).toFixed(2)}
+                    {formatCurrencyWithSymbol(
+                      item.quantity * item.unit_price,
+                      currency || 'USD'
+                    )}
                   </div>
                 </div>
 
@@ -462,7 +466,7 @@ export const InvoiceEditPage: React.FC = () => {
               <div className="text-right">
                 <div className="text-sm text-gray-500">Total Amount</div>
                 <div className="text-2xl font-bold text-gray-900">
-                  ${calculateTotal().toFixed(2)}
+                  {formatCurrencyWithSymbol(calculateTotal(), currency || 'USD')}
                 </div>
               </div>
             </div>
