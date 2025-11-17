@@ -72,6 +72,30 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Multi-Currency Warning */}
+      <div className="rounded-md bg-yellow-50 border border-yellow-200 p-4">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-yellow-800">
+              Multi-Currency Analytics Limitation
+            </h3>
+            <div className="mt-2 text-sm text-yellow-700">
+              <p>
+                Analytics currently aggregate amounts across all currencies without conversion. 
+                For accurate multi-currency reporting, the backend needs to be updated to either 
+                group by currency or convert to {displayCurrency}. Amounts below are shown with 
+                the {displayCurrency} symbol but may include mixed currencies.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <div className="card">
@@ -103,7 +127,9 @@ export const DashboardPage: React.FC = () => {
             </div>
             <div className="ml-5 w-0 flex-1">
               <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">Total Revenue</dt>
+                <dt className="text-sm font-medium text-gray-500 truncate">
+                  Total Revenue (approx. {displayCurrency})
+                </dt>
                 <dd className="text-lg font-semibold text-gray-900">
                   {formatCurrencyWithSymbol(Number(summary?.total_revenue || 0), displayCurrency)}
                 </dd>
@@ -123,7 +149,9 @@ export const DashboardPage: React.FC = () => {
             </div>
             <div className="ml-5 w-0 flex-1">
               <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">Pending Amount</dt>
+                <dt className="text-sm font-medium text-gray-500 truncate">
+                  Pending Amount (approx. {displayCurrency})
+                </dt>
                 <dd className="text-lg font-semibold text-gray-900">
                   {formatCurrencyWithSymbol(Number(summary?.pending_amount || 0), displayCurrency)}
                 </dd>
@@ -143,7 +171,9 @@ export const DashboardPage: React.FC = () => {
             </div>
             <div className="ml-5 w-0 flex-1">
               <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">Overdue</dt>
+                <dt className="text-sm font-medium text-gray-500 truncate">
+                  Overdue (approx. {displayCurrency})
+                </dt>
                 <dd className="text-lg font-semibold text-gray-900">
                   {formatCurrencyWithSymbol(Number(summary?.overdue_amount || 0), displayCurrency)}
                 </dd>
@@ -181,7 +211,7 @@ export const DashboardPage: React.FC = () => {
         <h3 className="text-lg font-medium text-gray-900 mb-4">
           Revenue by Status
           <span className="ml-2 text-xs font-normal text-gray-500">
-            (Amounts shown in {displayCurrency})
+            (Approx. {displayCurrency} - mixed currencies)
           </span>
         </h3>
         <div className="overflow-x-auto">
@@ -223,9 +253,12 @@ export const DashboardPage: React.FC = () => {
             </tbody>
           </table>
         </div>
-        <div className="mt-2 text-xs text-gray-500">
-          Note: Amounts from different currencies are aggregated for display purposes. 
-          Individual invoices maintain their original currency.
+        <div className="mt-3 rounded-md bg-blue-50 border border-blue-200 p-3">
+          <p className="text-sm text-blue-700">
+            <strong>Note:</strong> The backend currently aggregates amounts across all currencies without conversion. 
+            For accurate multi-currency analytics, backend updates are required to either group by currency or 
+            convert all amounts to {displayCurrency}. Individual invoices maintain their original currency.
+          </p>
         </div>
       </div>
 
