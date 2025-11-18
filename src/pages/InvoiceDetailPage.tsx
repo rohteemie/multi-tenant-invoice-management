@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useInvoiceStore } from '../store';
 import { useTenantStore } from '../store/tenantStore';
 import { Loading, ErrorMessage, Button } from '../components/common';
-import { InvoiceStatus, Currency } from '../types';
+import { InvoiceStatus, type Currency } from '../types';
 import { getValidInvoiceStatusTransitions, capitalizeFirstLetter } from '../utils';
 import { formatCurrencyWithSymbol } from '../utils/currencyUtils';
 
