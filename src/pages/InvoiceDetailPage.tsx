@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useInvoiceStore } from '../store';
+import { useTenantStore } from '../store/tenantStore';
 import { Loading, ErrorMessage, Button } from '../components/common';
-import { InvoiceStatus } from '../types';
+import { InvoiceStatus, Currency } from '../types';
 import { getValidInvoiceStatusTransitions, capitalizeFirstLetter } from '../utils';
 import { formatCurrencyWithSymbol } from '../utils/currencyUtils';
 
@@ -30,12 +31,16 @@ export const InvoiceDetailPage: React.FC = () => {
     downloadInvoicePDF,
     setError
   } = useInvoiceStore();
+  const { currentTenant } = useTenantStore();
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showMarkAsPaidModal, setShowMarkAsPaidModal] = useState(false);
   const [newStatus, setNewStatus] = useState<InvoiceStatus | ''>('');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showConfirmSendModal, setShowConfirmSendModal] = useState(false);
+
+  // Get the display currency: invoice currency, tenant default, or USD
+  const displayCurrency: Currency = currentInvoice?.currency || currentTenant?.default_currency || 'USD';
 
   useEffect(() => {
     if (id) {
@@ -367,22 +372,14 @@ export const InvoiceDetailPage: React.FC = () => {
                   <td className="px-6 py-4 text-sm text-gray-900">{item.description}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">{item.quantity}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    {currentInvoice.currency 
-                      ? formatCurrencyWithSymbol(Number(item.unit_price), currentInvoice.currency)
-                      : `$${Number(item.unit_price).toFixed(2)}`
-                    }
+                    {formatCurrencyWithSymbol(Number(item.unit_price), displayCurrency)}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
                     {item.tax_rate ? `${item.tax_rate}%` : '-'}
-                    {item.tax_amount ? ` (${currentInvoice.currency 
-                      ? formatCurrencyWithSymbol(Number(item.tax_amount), currentInvoice.currency)
-                      : `$${Number(item.tax_amount).toFixed(2)}`})` : ''}
+                    {item.tax_amount ? ` (${formatCurrencyWithSymbol(Number(item.tax_amount), displayCurrency)})` : ''}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    {currentInvoice.currency 
-                      ? formatCurrencyWithSymbol(Number(calculateItemTotal(item)), currentInvoice.currency)
-                      : `$${calculateItemTotal(item)}`
-                    }
+                    {formatCurrencyWithSymbol(Number(calculateItemTotal(item)), displayCurrency)}
                   </td>
                 </tr>
               ))}
@@ -396,37 +393,25 @@ export const InvoiceDetailPage: React.FC = () => {
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Subtotal</span>
                 <span className="text-gray-900">
-                  {currentInvoice.currency 
-                    ? formatCurrencyWithSymbol(Number(currentInvoice.subtotal), currentInvoice.currency)
-                    : `$${Number(currentInvoice.subtotal).toFixed(2)}`
-                  }
+                  {formatCurrencyWithSymbol(Number(currentInvoice.subtotal), displayCurrency)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Tax</span>
                 <span className="text-gray-900">
-                  {currentInvoice.currency 
-                    ? formatCurrencyWithSymbol(Number(currentInvoice.tax_amount), currentInvoice.currency)
-                    : `$${Number(currentInvoice.tax_amount).toFixed(2)}`
-                  }
+                  {formatCurrencyWithSymbol(Number(currentInvoice.tax_amount), displayCurrency)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Discount</span>
                 <span className="text-gray-900">
-                  -{currentInvoice.currency 
-                    ? formatCurrencyWithSymbol(Number(currentInvoice.discount_amount), currentInvoice.currency)
-                    : `$${Number(currentInvoice.discount_amount).toFixed(2)}`
-                  }
+                  -{formatCurrencyWithSymbol(Number(currentInvoice.discount_amount), displayCurrency)}
                 </span>
               </div>
               <div className="flex justify-between text-lg font-bold border-t pt-2">
                 <span>Total</span>
                 <span>
-                  {currentInvoice.currency 
-                    ? formatCurrencyWithSymbol(Number(currentInvoice.total_amount), currentInvoice.currency)
-                    : `$${Number(currentInvoice.total_amount).toFixed(2)}`
-                  }
+                  {formatCurrencyWithSymbol(Number(currentInvoice.total_amount), displayCurrency)}
                 </span>
               </div>
             </div>

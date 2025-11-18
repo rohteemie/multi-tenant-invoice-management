@@ -355,17 +355,17 @@ export const InvoiceCreatePage: React.FC = () => {
                     <>
                       <div className="flex justify-between text-sm text-gray-600">
                         <span>Subtotal:</span>
-                        <span>{currency ? formatCurrencyWithSymbol(subtotal, currency) : `$${subtotal.toFixed(2)}`}</span>
+                        <span>{formatCurrencyWithSymbol(subtotal, currency || 'USD')}</span>
                       </div>
                       {totalTax > 0 && (
                         <div className="flex justify-between text-sm text-gray-600">
                           <span>Tax:</span>
-                          <span>{currency ? formatCurrencyWithSymbol(totalTax, currency) : `$${totalTax.toFixed(2)}`}</span>
+                          <span>{formatCurrencyWithSymbol(totalTax, currency || 'USD')}</span>
                         </div>
                       )}
                       <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t">
                         <span>Total:</span>
-                        <span>{currency ? formatCurrencyWithSymbol(total, currency) : `$${total.toFixed(2)}`}</span>
+                        <span>{formatCurrencyWithSymbol(total, currency || 'USD')}</span>
                       </div>
                     </>
                   );
