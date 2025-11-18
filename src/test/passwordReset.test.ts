@@ -24,7 +24,7 @@ describe('Password Reset Service', () => {
 
       const result = await authService.requestPasswordReset(mockData);
 
-      expect(apiClient.post).toHaveBeenCalledWith('/auth/password-reset/request', mockData);
+      expect(apiClient.post).toHaveBeenCalledWith('/auth/forgot-password', mockData);
       expect(result.message).toBe('Password reset email sent successfully');
     });
 
@@ -55,7 +55,7 @@ describe('Password Reset Service', () => {
 
       const result = await authService.resetPassword(mockData);
 
-      expect(apiClient.post).toHaveBeenCalledWith('/auth/password-reset/confirm', mockData);
+      expect(apiClient.post).toHaveBeenCalledWith('/auth/reset-password', mockData);
       expect(result.message).toBe('Password reset successfully');
     });
 
