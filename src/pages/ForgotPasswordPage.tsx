@@ -4,6 +4,7 @@ import { authService } from '../services';
 import { Button, ErrorMessage } from '../components/common';
 import { getErrorMessage } from '../types/error';
 
+// ForgotPasswordPage: Allows users to request a password reset via email
 export const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
