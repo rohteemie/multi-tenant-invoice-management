@@ -1,5 +1,5 @@
 import { apiClient } from './api';
-import type { Token, LoginCredentials, TenantRegister, TenantWithOwner } from '../types';
+import type { Token, LoginCredentials, TenantRegister, TenantWithOwner, PasswordResetRequest, PasswordResetConfirm } from '../types';
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<Token> {
@@ -48,5 +48,15 @@ export const authService = {
 
   getAccessToken(): string | null {
     return localStorage.getItem('access_token');
+  },
+
+  async requestPasswordReset(data: PasswordResetRequest): Promise<{ message: string }> {
+    const response = await apiClient.post<{ message: string }>('/auth/password-reset/request', data);
+    return response.data;
+  },
+
+  async resetPassword(data: PasswordResetConfirm): Promise<{ message: string }> {
+    const response = await apiClient.post<{ message: string }>('/auth/password-reset/confirm', data);
+    return response.data;
   },
 };

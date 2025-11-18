@@ -15,3 +15,12 @@ export interface TokenPayload {
   role: string;
   exp?: number;
 }
+
+export interface PasswordResetRequest {
+  email: string;
+}
+
+export interface PasswordResetConfirm {
+  token: string;
+  new_password: string;
+}

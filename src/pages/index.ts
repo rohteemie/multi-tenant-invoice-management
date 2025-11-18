@@ -1,5 +1,7 @@
 export * from './LoginPage';
 export * from './RegisterPage';
+export * from './ForgotPasswordPage';
+export * from './ResetPasswordPage';
 export * from './DashboardPage';
 export * from './InvoiceListPage';
 export * from './InvoiceCreatePage';

@@ -75,6 +75,15 @@ export const LoginPage: React.FC = () => {
             </div>
           </div>
 
+          <div className="flex items-center justify-end">
+            <Link
+              to="/forgot-password"
+              className="text-sm font-medium text-blue-600 hover:text-blue-500"
+            >
+              Forgot password?
+            </Link>
+          </div>
+
           <div>
             <Button
               type="submit"
