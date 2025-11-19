@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useInvoiceStore } from '../store';
 import { Button, ErrorMessage, Loading, CurrencySelector } from '../components/common';
 import type { InvoiceItemCreate, Currency } from '../types';
-import { InvoiceStatus } from '../types';
+import { InvoiceStatus, PaymentMethod } from '../types';
 import { formatCurrencyWithSymbol } from '../utils/currencyUtils';
 
 export const InvoiceEditPage: React.FC = () => {
@@ -16,21 +16,20 @@ export const InvoiceEditPage: React.FC = () => {
     customer_email: '',
     customer_phone: '',
     customer_address: '',
-    customer_vat_number: '',
     branch_id: '',
     issue_date: '',
     due_date: '',
     notes: '',
   });
 
-  const [currency, setCurrency] = useState<Currency | undefined>('USD');
+  const [currency, setCurrency] = useState<Currency | undefined>('NGN');
 
   const [items, setItems] = useState<InvoiceItemCreate[]>([
-    { description: '', quantity: 1, unit_price: 0, tax_rate: 0 },
+    { description: '', quantity: 1, unit_price: 0 },
   ]);
 
   const [selectedStatus, setSelectedStatus] = useState<InvoiceStatus>(InvoiceStatus.DRAFT);
-  const [paymentMethod, setPaymentMethod] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | ''>('');
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
@@ -52,14 +51,13 @@ export const InvoiceEditPage: React.FC = () => {
         customer_email: currentInvoice.customer_email || '',
         customer_phone: currentInvoice.customer_phone || '',
         customer_address: currentInvoice.customer_address || '',
-        customer_vat_number: currentInvoice.customer_vat_number || '',
         branch_id: currentInvoice.branch_id || '',
         issue_date: currentInvoice.issue_date,
         due_date: currentInvoice.due_date || '',
         notes: currentInvoice.notes || '',
       });
 
-      setCurrency(currentInvoice.currency || 'USD');
+      setCurrency(currentInvoice.currency || 'NGN');
 
       if (currentInvoice.items && currentInvoice.items.length > 0) {
         setItems(
@@ -67,7 +65,6 @@ export const InvoiceEditPage: React.FC = () => {
             description: item.description,
             quantity: Number(item.quantity),
             unit_price: Number(item.unit_price),
-            tax_rate: Number(item.tax_rate || 0),
           }))
         );
       }
@@ -94,7 +91,7 @@ export const InvoiceEditPage: React.FC = () => {
   };
 
   const addItem = () => {
-    setItems([...items, { description: '', quantity: 1, unit_price: 0, tax_rate: 0 }]);
+    setItems([...items, { description: '', quantity: 1, unit_price: 0 }]);
   };
 
   const removeItem = (index: number) => {
@@ -135,7 +132,7 @@ export const InvoiceEditPage: React.FC = () => {
       if (currentInvoice && selectedStatus !== currentInvoice.status) {
         await updateInvoiceStatus(id, {
           status: selectedStatus,
-          payment_method: selectedStatus === InvoiceStatus.PAID ? paymentMethod : undefined,
+          payment_method: selectedStatus === InvoiceStatus.PAID && paymentMethod ? paymentMethod : undefined,
         });
       }
 
@@ -262,21 +259,6 @@ export const InvoiceEditPage: React.FC = () => {
                 className="mt-1 input-field"
               />
             </div>
-
-            <div>
-              <label htmlFor="customer_vat_number" className="block text-sm font-medium text-gray-700">
-                VAT/Tax Number
-              </label>
-              <input
-                id="customer_vat_number"
-                name="customer_vat_number"
-                type="text"
-                value={formData.customer_vat_number}
-                onChange={handleChange}
-                className="mt-1 input-field"
-                placeholder="e.g., GB123456789"
-              />
-            </div>
           </div>
         </div>
 
@@ -345,16 +327,23 @@ export const InvoiceEditPage: React.FC = () => {
                 <label htmlFor="payment_method" className="block text-sm font-medium text-gray-700">
                   Payment Method *
                 </label>
-                <input
+                <select
                   id="payment_method"
                   name="payment_method"
-                  type="text"
                   value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
                   className="mt-1 input-field"
-                  placeholder="e.g., Credit Card, Cash, Bank Transfer"
                   required={selectedStatus === InvoiceStatus.PAID}
-                />
+                >
+                  <option value="">Select payment method</option>
+                  <option value={PaymentMethod.TRANSFER}>Bank Transfer</option>
+                  <option value={PaymentMethod.CASH}>Cash</option>
+                  <option value={PaymentMethod.POS}>POS</option>
+                  <option value={PaymentMethod.CHEQUE}>Cheque</option>
+                  <option value={PaymentMethod.CARD}>Card</option>
+                  <option value={PaymentMethod.MOBILE_MONEY}>Mobile Money</option>
+                  <option value={PaymentMethod.OTHER}>Other</option>
+                </select>
                 <p className="mt-1 text-xs text-gray-500">
                   Required when marking invoice as paid
                 </p>

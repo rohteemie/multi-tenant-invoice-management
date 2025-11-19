@@ -52,7 +52,7 @@ const availableFeatures = [
   },
   {
     title: 'Multi-Currency Support',
-    description: 'Create and manage invoices in multiple currencies (USD, EUR, GBP, NGN, JPY, CAD, AUD) with proper formatting',
+    description: 'Create and manage invoices in multiple currencies (NGN, USD, GBP, EUR) with proper formatting',
     available: true,
   },
   {

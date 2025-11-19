@@ -41,6 +41,7 @@ describe('Invoice Store - Update and Delete', () => {
       tenant_id: 'tenant-1',
       creator_id: 'user-1',
       status: 'draft' as const,
+      currency: 'NGN' as const,
       issue_date: '2024-01-01',
       subtotal: 100,
       tax_amount: 0,
@@ -107,8 +108,8 @@ describe('Invoice Store - Update and Delete', () => {
       customer_name: 'Test Customer',
       tenant_id: 'tenant-1',
       creator_id: 'user-1',
-      updater_id: 'user-2',
       status: 'sent' as const,
+      currency: 'NGN' as const,
       issue_date: '2024-01-01',
       subtotal: 100,
       tax_amount: 0,
@@ -140,14 +141,14 @@ describe('Invoice Store - Update and Delete', () => {
       customer_name: 'Test Customer',
       tenant_id: 'tenant-1',
       creator_id: 'user-1',
-      updater_id: 'user-2',
       status: 'paid' as const,
+      currency: 'NGN' as const,
       issue_date: '2024-01-01',
       subtotal: 100,
       tax_amount: 0,
       discount_amount: 0,
       total_amount: 100,
-      payment_method: 'Credit Card',
+      payment_method: 'card' as const,
       paid_at: '2024-01-03',
       items: [],
       created_at: '2024-01-01',
@@ -161,17 +162,17 @@ describe('Invoice Store - Update and Delete', () => {
     await act(async () => {
       await result.current.updateInvoiceStatus('1', { 
         status: 'paid',
-        payment_method: 'Credit Card'
+        payment_method: 'card'
       });
     });
 
     expect(invoiceService.updateStatus).toHaveBeenCalledWith('1', { 
       status: 'paid',
-      payment_method: 'Credit Card'
+      payment_method: 'card'
     });
     expect(result.current.currentInvoice).toEqual(mockInvoice);
     expect(result.current.currentInvoice?.status).toBe('paid');
-    expect(result.current.currentInvoice?.payment_method).toBe('Credit Card');
+    expect(result.current.currentInvoice?.payment_method).toBe('card');
   });
 
   it('should update invoice status from draft to sent', async () => {
@@ -182,8 +183,8 @@ describe('Invoice Store - Update and Delete', () => {
       customer_name: 'Test Customer',
       tenant_id: 'tenant-1',
       creator_id: 'user-1',
-      updater_id: 'user-2',
       status: 'sent' as const,
+      currency: 'NGN' as const,
       issue_date: '2024-01-01',
       subtotal: 100,
       tax_amount: 0,
@@ -226,6 +227,7 @@ describe('User Store - Update and Delete', () => {
       tenant_id: 'tenant-1',
       is_active: true,
       is_verified: true,
+      currency_preference: 'NGN',
       created_at: '2024-01-01',
       updated_at: '2024-01-02',
     };
@@ -271,6 +273,7 @@ describe('User Store - Update and Delete', () => {
         tenant_id: 'tenant-1',
         is_active: true,
         is_verified: true,
+        currency_preference: 'NGN',
         created_at: '2024-01-01',
         updated_at: '2024-01-01',
       },
@@ -305,6 +308,7 @@ describe('Tenant Store - Update and Delete', () => {
       domain: 'updated.com',
       description: 'Updated description',
       plan_type: 'premium',
+      default_currency: 'NGN' as const,
       is_active: true,
       created_at: '2024-01-01',
       updated_at: '2024-01-02',
@@ -346,6 +350,7 @@ describe('Tenant Store - Update and Delete', () => {
       id: '1',
       name: 'Test Tenant',
       plan_type: 'free',
+      default_currency: 'NGN' as const,
       is_active: true,
       created_at: '2024-01-01',
       updated_at: '2024-01-01',

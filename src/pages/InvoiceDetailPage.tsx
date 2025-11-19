@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useInvoiceStore } from '../store';
 import { useTenantStore } from '../store/tenantStore';
 import { Loading, ErrorMessage, Button } from '../components/common';
-import { InvoiceStatus, type Currency } from '../types';
+import { InvoiceStatus, PaymentMethod, type Currency } from '../types';
 import { getValidInvoiceStatusTransitions, capitalizeFirstLetter } from '../utils';
 import { formatCurrencyWithSymbol } from '../utils/currencyUtils';
 
@@ -35,12 +35,12 @@ export const InvoiceDetailPage: React.FC = () => {
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showMarkAsPaidModal, setShowMarkAsPaidModal] = useState(false);
   const [newStatus, setNewStatus] = useState<InvoiceStatus | ''>('');
-  const [paymentMethod, setPaymentMethod] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | ''>('');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [showConfirmSendModal, setShowConfirmSendModal] = useState(false);
 
-  // Get the display currency: invoice currency, tenant default, or USD
-  const displayCurrency: Currency = currentInvoice?.currency || currentTenant?.default_currency || 'USD';
+  // Get the display currency: invoice currency, tenant default, or NGN
+  const displayCurrency: Currency = currentInvoice?.currency || currentTenant?.default_currency || 'NGN';
 
   useEffect(() => {
     if (id) {
@@ -60,7 +60,7 @@ export const InvoiceDetailPage: React.FC = () => {
     try {
       await updateInvoiceStatus(id, {
         status: newStatus,
-        payment_method: newStatus === InvoiceStatus.PAID ? paymentMethod : undefined,
+        payment_method: newStatus === InvoiceStatus.PAID && paymentMethod ? paymentMethod : undefined,
       });
       handleCloseModal();
       setSuccessMessage('Invoice status updated successfully');
@@ -263,12 +263,6 @@ export const InvoiceDetailPage: React.FC = () => {
                 <dd className="mt-1 text-sm text-gray-900 break-words">{currentInvoice.customer_address}</dd>
               </div>
             )}
-            {currentInvoice.customer_vat_number && (
-              <div>
-                <dt className="text-sm font-medium text-gray-500">VAT/Tax Number</dt>
-                <dd className="mt-1 text-sm text-gray-900 break-words">{currentInvoice.customer_vat_number}</dd>
-              </div>
-            )}
           </dl>
         </div>
 
@@ -306,12 +300,6 @@ export const InvoiceDetailPage: React.FC = () => {
                 {new Date(currentInvoice.created_at).toLocaleString()}
               </dd>
             </div>
-            {currentInvoice.updater_id && (
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Last Updated By</dt>
-                <dd className="mt-1 text-sm text-gray-900 break-words">{currentInvoice.updater_id}</dd>
-              </div>
-            )}
             <div>
               <dt className="text-sm font-medium text-gray-500">Last Updated At</dt>
               <dd className="mt-1 text-sm text-gray-900">
@@ -359,9 +347,6 @@ export const InvoiceDetailPage: React.FC = () => {
                   Unit Price
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tax
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Total
                 </th>
               </tr>
@@ -373,10 +358,6 @@ export const InvoiceDetailPage: React.FC = () => {
                   <td className="px-6 py-4 text-sm text-gray-900">{item.quantity}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">
                     {formatCurrencyWithSymbol(Number(item.unit_price), displayCurrency)}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    {item.tax_rate ? `${item.tax_rate}%` : '-'}
-                    {item.tax_amount ? ` (${formatCurrencyWithSymbol(Number(item.tax_amount), displayCurrency)})` : ''}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
                     {formatCurrencyWithSymbol(Number(calculateItemTotal(item)), displayCurrency)}
@@ -467,14 +448,21 @@ export const InvoiceDetailPage: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700">
                         Payment Method <span className="text-red-500">*</span>
                       </label>
-                      <input
-                        type="text"
+                      <select
                         value={paymentMethod}
-                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
                         className="mt-1 input-field"
-                        placeholder="e.g., Credit Card, Cash, Bank Transfer"
                         required
-                      />
+                      >
+                        <option value="">Select payment method</option>
+                        <option value={PaymentMethod.TRANSFER}>Bank Transfer</option>
+                        <option value={PaymentMethod.CASH}>Cash</option>
+                        <option value={PaymentMethod.POS}>POS</option>
+                        <option value={PaymentMethod.CHEQUE}>Cheque</option>
+                        <option value={PaymentMethod.CARD}>Card</option>
+                        <option value={PaymentMethod.MOBILE_MONEY}>Mobile Money</option>
+                        <option value={PaymentMethod.OTHER}>Other</option>
+                      </select>
                       <p className="mt-1 text-xs text-gray-500">
                         Payment method is required when marking invoice as paid
                       </p>
@@ -579,14 +567,21 @@ export const InvoiceDetailPage: React.FC = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Payment Method <span className="text-red-500">*</span>
                       </label>
-                      <input
-                        type="text"
+                      <select
                         value={paymentMethod}
-                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="e.g., Credit Card, Cash, Bank Transfer"
                         required
-                      />
+                      >
+                        <option value="">Select payment method</option>
+                        <option value={PaymentMethod.TRANSFER}>Bank Transfer</option>
+                        <option value={PaymentMethod.CASH}>Cash</option>
+                        <option value={PaymentMethod.POS}>POS</option>
+                        <option value={PaymentMethod.CHEQUE}>Cheque</option>
+                        <option value={PaymentMethod.CARD}>Card</option>
+                        <option value={PaymentMethod.MOBILE_MONEY}>Mobile Money</option>
+                        <option value={PaymentMethod.OTHER}>Other</option>
+                      </select>
                       <p className="mt-2 text-xs text-gray-500">
                         Please specify how the payment was received
                       </p>

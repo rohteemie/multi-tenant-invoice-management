@@ -35,6 +35,7 @@ describe('Invoice PDF Workflow E2E Tests', () => {
     customer_email: 'customer@example.com',
     customer_phone: '123-456-7890',
     customer_address: '123 Test St, Test City, TS 12345',
+    currency: 'NGN',
     status: InvoiceStatus.DRAFT,
     issue_date: '2024-01-01',
     due_date: '2024-02-01',

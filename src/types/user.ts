@@ -15,6 +15,7 @@ export interface User {
   tenant_id: string;
   is_active: boolean;
   is_verified: boolean;
+  currency_preference: string; // User's preferred currency (NGN, USD, GBP, EUR) - cannot be changed once set
   created_at: string;
   updated_at: string;
 }
@@ -25,6 +26,7 @@ export interface UserCreate {
   password: string;
   role: UserRole;
   tenant_id: string;
+  currency_preference?: string; // Optional on create, defaults to NGN
 }
 
 export interface UserUpdate {

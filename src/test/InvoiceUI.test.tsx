@@ -83,10 +83,10 @@ describe('Invoice UI Fixes', () => {
       const modalContent = container.querySelector('.relative.z-10');
       expect(modalContent).toBeInTheDocument();
       
-      // Verify payment method input is visible and interactive
-      const paymentInput = screen.getByPlaceholderText(/Credit Card, Cash/i);
-      expect(paymentInput).toBeInTheDocument();
-      expect(paymentInput).toBeVisible();
+      // Verify payment method select is visible and interactive
+      const paymentSelect = screen.getByRole('combobox');
+      expect(paymentSelect).toBeInTheDocument();
+      expect(paymentSelect).toBeVisible();
 
       // Verify Confirm Payment button is visible
       const confirmButton = screen.getByText('Confirm Payment');
