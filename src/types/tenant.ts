@@ -35,6 +35,9 @@ export interface TenantRegister {
   domain?: string;
   description?: string;
   plan_type?: string;
+  default_currency?: Currency; // Optional, backend defaults to USD
+  tax_rate?: number; // Optional tax/VAT rate as percentage (0-100)
+  tax_label?: string; // Optional tax label (e.g., "VAT", "GST", "Sales Tax")
   owner: OwnerCreate;
 }
 

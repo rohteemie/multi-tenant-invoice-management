@@ -49,6 +49,7 @@ export const RegisterPage: React.FC = () => {
         domain: formData.tenantDomain,
         description: formData.tenantDescription,
         plan_type: 'free',
+        default_currency: 'NGN', // Default currency aligned with frontend
         owner: {
           full_name: formData.ownerName,
           email: formData.ownerEmail,
