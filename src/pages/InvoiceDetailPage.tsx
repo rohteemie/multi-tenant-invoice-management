@@ -31,7 +31,7 @@ export const InvoiceDetailPage: React.FC = () => {
     downloadInvoicePDF,
     setError
   } = useInvoiceStore();
-  const { currentTenant } = useTenantStore();
+  const { currentTenant, fetchTenantById } = useTenantStore();
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showMarkAsPaidModal, setShowMarkAsPaidModal] = useState(false);
   const [newStatus, setNewStatus] = useState<InvoiceStatus | ''>('');
@@ -47,6 +47,15 @@ export const InvoiceDetailPage: React.FC = () => {
       fetchInvoiceById(id);
     }
   }, [id]);
+
+  useEffect(() => {
+    if (currentInvoice?.tenant_id && !currentTenant) {
+      // Silently fetch tenant data for branding display
+      fetchTenantById(currentInvoice.tenant_id).catch(() => {
+        // Ignore errors - branding is optional
+      });
+    }
+  }, [currentInvoice?.tenant_id, currentTenant, fetchTenantById]);
 
   const handleCloseModal = () => {
     setShowStatusModal(false);
@@ -235,6 +244,47 @@ export const InvoiceDetailPage: React.FC = () => {
 
       {error && <ErrorMessage message={error} />}
 
+      {/* Tenant Branding Section */}
+      {currentTenant && (currentTenant.logo_url || currentTenant.address || currentTenant.phone || currentTenant.email) && (
+        <div className="card">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">From</h3>
+          <div className="flex items-start space-x-4">
+            {currentTenant.logo_url && (
+              <div className="flex-shrink-0">
+                <img
+                  src={currentTenant.logo_url}
+                  alt={`${currentTenant.name} logo`}
+                  className="h-16 w-auto object-contain"
+                />
+              </div>
+            )}
+            <div className="flex-1">
+              <h4 className="text-base font-semibold text-gray-900">{currentTenant.name}</h4>
+              <dl className="mt-2 space-y-1 text-sm text-gray-600">
+                {currentTenant.address && (
+                  <div>
+                    <dt className="sr-only">Address</dt>
+                    <dd className="whitespace-pre-line">{currentTenant.address}</dd>
+                  </div>
+                )}
+                {currentTenant.phone && (
+                  <div className="flex items-center">
+                    <dt className="sr-only">Phone</dt>
+                    <dd>{currentTenant.phone}</dd>
+                  </div>
+                )}
+                {currentTenant.email && (
+                  <div className="flex items-center">
+                    <dt className="sr-only">Email</dt>
+                    <dd>{currentTenant.email}</dd>
+                  </div>
+                )}
+              </dl>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Invoice Details */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Customer Information */}
@@ -378,7 +428,7 @@ export const InvoiceDetailPage: React.FC = () => {
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Tax</span>
+                <span className="text-gray-500">{currentTenant?.tax_label || 'Tax'}</span>
                 <span className="text-gray-900">
                   {formatCurrencyWithSymbol(Number(currentInvoice.tax_amount), displayCurrency)}
                 </span>

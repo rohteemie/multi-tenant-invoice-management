@@ -2,14 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTenantStore } from '../store';
 import { useAuthStore } from '../store';
-import { Button, ErrorMessage, SuccessMessage, Loading, CurrencySelector } from '../components/common';
+import { Button, ErrorMessage, SuccessMessage, Loading, CurrencySelector, TaxRateInput, LogoUpload } from '../components/common';
 import { UserRole } from '../types';
 import type { TenantCreate, Currency } from '../types';
 
 export const TenantSettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const { user: currentUser, logout } = useAuthStore();
-  const { currentTenant, isLoading, error, fetchTenantById, updateTenant, deleteTenant, setError } = useTenantStore();
+  const { currentTenant, isLoading, error, fetchTenantById, updateTenant, deleteTenant, uploadLogo, deleteLogo, setError } = useTenantStore();
   
   const [formData, setFormData] = useState<Partial<TenantCreate>>({
     name: '',
@@ -17,6 +17,11 @@ export const TenantSettingsPage: React.FC = () => {
     description: '',
     plan_type: '',
     default_currency: 'NGN',
+    tax_rate: 0,
+    tax_label: '',
+    address: '',
+    phone: '',
+    email: '',
   });
   
   const [isInitialized, setIsInitialized] = useState(false);
@@ -45,6 +50,11 @@ export const TenantSettingsPage: React.FC = () => {
         description: currentTenant.description || '',
         plan_type: currentTenant.plan_type,
         default_currency: currentTenant.default_currency || 'NGN',
+        tax_rate: currentTenant.tax_rate || 0,
+        tax_label: currentTenant.tax_label || '',
+        address: currentTenant.address || '',
+        phone: currentTenant.phone || '',
+        email: currentTenant.email || '',
       });
       setIsInitialized(true);
     }
@@ -62,6 +72,37 @@ export const TenantSettingsPage: React.FC = () => {
       ...formData,
       default_currency: currency,
     });
+  };
+
+  const handleTaxRateChange = (rate: number) => {
+    setFormData({
+      ...formData,
+      tax_rate: rate,
+    });
+  };
+
+  const handleLogoUpload = async (file: File) => {
+    if (!currentUser?.tenant_id) return;
+    
+    try {
+      await uploadLogo(currentUser.tenant_id, file);
+      setSuccessMessage('Logo uploaded successfully');
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch {
+      // Error is handled in store
+    }
+  };
+
+  const handleLogoDelete = async () => {
+    if (!currentUser?.tenant_id) return;
+    
+    try {
+      await deleteLogo(currentUser.tenant_id);
+      setSuccessMessage('Logo deleted successfully');
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch {
+      // Error is handled in store
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -130,7 +171,7 @@ export const TenantSettingsPage: React.FC = () => {
             Tenant Settings
           </h2>
           <p className="mt-1 text-sm text-gray-500">
-            Manage your organization settings and preferences
+            Manage your organization settings and branding
           </p>
         </div>
       </div>
@@ -138,6 +179,17 @@ export const TenantSettingsPage: React.FC = () => {
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && <ErrorMessage message={error} onDismiss={() => setError(null)} />}
         {successMessage && <SuccessMessage message={successMessage} onDismiss={() => setSuccessMessage(null)} />}
+
+        {/* Logo Upload Section */}
+        <div className="card">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Branding</h3>
+          <LogoUpload
+            currentLogoUrl={currentTenant.logo_url}
+            onUpload={handleLogoUpload}
+            onDelete={currentTenant.logo_url ? handleLogoDelete : undefined}
+            isLoading={isLoading}
+          />
+        </div>
 
         {/* Tenant Information */}
         <div className="card">
@@ -207,6 +259,87 @@ export const TenantSettingsPage: React.FC = () => {
                 onChange={handleChange}
                 className="mt-1 input-field"
                 placeholder="Brief description of your organization"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Contact Information */}
+        <div className="card">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Contact Information</h3>
+          <p className="text-sm text-gray-500 mb-4">
+            This information will appear on your invoices
+          </p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Email
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="mt-1 input-field"
+                placeholder="contact@yourcompany.com"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                Phone
+              </label>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                value={formData.phone}
+                onChange={handleChange}
+                className="mt-1 input-field"
+                placeholder="+1 (555) 123-4567"
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+                Address
+              </label>
+              <textarea
+                id="address"
+                name="address"
+                rows={3}
+                value={formData.address}
+                onChange={handleChange}
+                className="mt-1 input-field"
+                placeholder="123 Main St, Suite 100, City, State, ZIP"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Tax Settings */}
+        <div className="card">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Tax Settings</h3>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <TaxRateInput
+              value={formData.tax_rate || 0}
+              onChange={handleTaxRateChange}
+              label="Default Tax Rate"
+            />
+
+            <div>
+              <label htmlFor="tax_label" className="block text-sm font-medium text-gray-700">
+                Tax Label
+              </label>
+              <input
+                id="tax_label"
+                name="tax_label"
+                type="text"
+                value={formData.tax_label}
+                onChange={handleChange}
+                className="mt-1 input-field"
+                placeholder="e.g., VAT, GST, Sales Tax"
               />
             </div>
           </div>
