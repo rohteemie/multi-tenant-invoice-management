@@ -25,10 +25,6 @@ describe('currencyUtils', () => {
       expect(formatCurrencyWithSymbol(1234.56, 'NGN')).toBe('₦1234.56');
     });
 
-    it('should format JPY with symbol (no decimals)', () => {
-      expect(formatCurrencyWithSymbol(1234.56, 'JPY')).toBe('1235 ¥');
-    });
-
     it('should format without symbol when showSymbol is false', () => {
       expect(formatCurrencyWithSymbol(1234.56, 'USD', false)).toBe('1234.56');
     });
@@ -41,32 +37,29 @@ describe('currencyUtils', () => {
       expect(formatCurrencyWithSymbol(-100, 'USD')).toBe('$-100.00');
     });
 
-    it('should use default USD when no currency specified', () => {
-      expect(formatCurrencyWithSymbol(100)).toBe('$100.00');
+    it('should use default NGN when no currency specified', () => {
+      expect(formatCurrencyWithSymbol(100)).toBe('₦100.00');
     });
   });
 
   describe('getAvailableCurrencies', () => {
     it('should return all available currencies', () => {
       const currencies = getAvailableCurrencies();
-      expect(currencies).toHaveLength(7);
+      expect(currencies).toHaveLength(4);
       expect(currencies[0]).toEqual({
-        code: 'USD',
-        name: 'US Dollar',
-        symbol: '$',
+        code: 'NGN',
+        name: 'Nigerian Naira',
+        symbol: '₦',
       });
     });
 
     it('should include all supported currencies', () => {
       const currencies = getAvailableCurrencies();
       const codes = currencies.map((c) => c.code);
-      expect(codes).toContain('USD');
-      expect(codes).toContain('EUR');
-      expect(codes).toContain('GBP');
       expect(codes).toContain('NGN');
-      expect(codes).toContain('JPY');
-      expect(codes).toContain('CAD');
-      expect(codes).toContain('AUD');
+      expect(codes).toContain('USD');
+      expect(codes).toContain('GBP');
+      expect(codes).toContain('EUR');
     });
   });
 
@@ -97,25 +90,19 @@ describe('currencyUtils', () => {
 
   describe('CURRENCY_SYMBOLS', () => {
     it('should have symbols for all currencies', () => {
-      expect(CURRENCY_SYMBOLS.USD).toBe('$');
-      expect(CURRENCY_SYMBOLS.EUR).toBe('€');
-      expect(CURRENCY_SYMBOLS.GBP).toBe('£');
       expect(CURRENCY_SYMBOLS.NGN).toBe('₦');
-      expect(CURRENCY_SYMBOLS.JPY).toBe('¥');
-      expect(CURRENCY_SYMBOLS.CAD).toBe('C$');
-      expect(CURRENCY_SYMBOLS.AUD).toBe('A$');
+      expect(CURRENCY_SYMBOLS.USD).toBe('$');
+      expect(CURRENCY_SYMBOLS.GBP).toBe('£');
+      expect(CURRENCY_SYMBOLS.EUR).toBe('€');
     });
   });
 
   describe('CURRENCY_DECIMALS', () => {
     it('should have correct decimal places', () => {
-      expect(CURRENCY_DECIMALS.USD).toBe(2);
-      expect(CURRENCY_DECIMALS.EUR).toBe(2);
-      expect(CURRENCY_DECIMALS.GBP).toBe(2);
       expect(CURRENCY_DECIMALS.NGN).toBe(2);
-      expect(CURRENCY_DECIMALS.JPY).toBe(0); // Japanese Yen doesn't use decimals
-      expect(CURRENCY_DECIMALS.CAD).toBe(2);
-      expect(CURRENCY_DECIMALS.AUD).toBe(2);
+      expect(CURRENCY_DECIMALS.USD).toBe(2);
+      expect(CURRENCY_DECIMALS.GBP).toBe(2);
+      expect(CURRENCY_DECIMALS.EUR).toBe(2);
     });
   });
 });

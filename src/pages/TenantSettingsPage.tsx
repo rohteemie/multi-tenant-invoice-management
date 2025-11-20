@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTenantStore } from '../store';
 import { useAuthStore } from '../store';
-import { Button, ErrorMessage, SuccessMessage, Loading } from '../components/common';
+import { Button, ErrorMessage, SuccessMessage, Loading, CurrencySelector } from '../components/common';
 import { UserRole } from '../types';
-import type { TenantCreate } from '../types';
+import type { TenantCreate, Currency } from '../types';
 
 export const TenantSettingsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -16,6 +16,7 @@ export const TenantSettingsPage: React.FC = () => {
     domain: '',
     description: '',
     plan_type: '',
+    default_currency: 'NGN',
   });
   
   const [isInitialized, setIsInitialized] = useState(false);
@@ -43,6 +44,7 @@ export const TenantSettingsPage: React.FC = () => {
         domain: currentTenant.domain || '',
         description: currentTenant.description || '',
         plan_type: currentTenant.plan_type,
+        default_currency: currentTenant.default_currency || 'NGN',
       });
       setIsInitialized(true);
     }
@@ -52,6 +54,13 @@ export const TenantSettingsPage: React.FC = () => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleCurrencyChange = (currency: Currency) => {
+    setFormData({
+      ...formData,
+      default_currency: currency,
     });
   };
 
@@ -178,6 +187,13 @@ export const TenantSettingsPage: React.FC = () => {
                 placeholder="e.g., Free, Basic, Premium"
               />
             </div>
+
+            <CurrencySelector
+              value={formData.default_currency}
+              onChange={handleCurrencyChange}
+              label="Default Currency"
+              required
+            />
 
             <div className="sm:col-span-2">
               <label htmlFor="description" className="block text-sm font-medium text-gray-700">

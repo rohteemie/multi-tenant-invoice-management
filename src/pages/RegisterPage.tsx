@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { tenantService } from '../services';
-import { Button, ErrorMessage } from '../components/common';
+import { Button, ErrorMessage, CurrencySelector } from '../components/common';
 import { getErrorMessage } from '../types/error';
+import type { Currency } from '../types';
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -19,6 +20,8 @@ export const RegisterPage: React.FC = () => {
     ownerPassword: '',
     confirmPassword: '',
   });
+
+  const [defaultCurrency, setDefaultCurrency] = useState<Currency>('NGN');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -49,6 +52,7 @@ export const RegisterPage: React.FC = () => {
         domain: formData.tenantDomain,
         description: formData.tenantDescription,
         plan_type: 'free',
+        default_currency: defaultCurrency, // Use user-selected currency
         owner: {
           full_name: formData.ownerName,
           email: formData.ownerEmail,
@@ -170,6 +174,13 @@ export const RegisterPage: React.FC = () => {
                     placeholder="Brief description of your organization"
                   />
                 </div>
+
+                <CurrencySelector
+                  value={defaultCurrency}
+                  onChange={setDefaultCurrency}
+                  label="Default Currency"
+                  required
+                />
               </div>
             </div>
 

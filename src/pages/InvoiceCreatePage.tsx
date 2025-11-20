@@ -16,7 +16,6 @@ export const InvoiceCreatePage: React.FC = () => {
     customer_email: '',
     customer_phone: '',
     customer_address: '',
-    customer_vat_number: '',
     branch_id: '',
     issue_date: new Date().toISOString().split('T')[0],
     due_date: '',
@@ -24,11 +23,11 @@ export const InvoiceCreatePage: React.FC = () => {
   });
 
   const [currency, setCurrency] = useState<Currency | undefined>(
-    currentTenant?.default_currency || 'USD'
+    currentTenant?.default_currency || 'NGN'
   );
 
   const [items, setItems] = useState<InvoiceItemCreate[]>([
-    { description: '', quantity: 1, unit_price: 0, tax_rate: 0 },
+    { description: '', quantity: 1, unit_price: 0 },
   ]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -48,7 +47,7 @@ export const InvoiceCreatePage: React.FC = () => {
   };
 
   const addItem = () => {
-    setItems([...items, { description: '', quantity: 1, unit_price: 0, tax_rate: 0 }]);
+    setItems([...items, { description: '', quantity: 1, unit_price: 0 }]);
   };
 
   const removeItem = (index: number) => {
@@ -165,21 +164,6 @@ export const InvoiceCreatePage: React.FC = () => {
                 className="mt-1 input-field"
               />
             </div>
-
-            <div>
-              <label htmlFor="customer_vat_number" className="block text-sm font-medium text-gray-700">
-                VAT/Tax Number
-              </label>
-              <input
-                id="customer_vat_number"
-                name="customer_vat_number"
-                type="text"
-                value={formData.customer_vat_number}
-                onChange={handleChange}
-                className="mt-1 input-field"
-                placeholder="e.g., GB123456789"
-              />
-            </div>
           </div>
         </div>
 
@@ -294,32 +278,12 @@ export const InvoiceCreatePage: React.FC = () => {
                   />
                 </div>
 
-                <div className="col-span-4 sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Tax (%)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.01"
-                    value={item.tax_rate || 0}
-                    onChange={(e) => handleItemChange(index, 'tax_rate', e.target.value)}
-                    className="mt-1 input-field"
-                    placeholder="0.00"
-                  />
-                </div>
-
                 <div className="col-span-5 sm:col-span-1">
                   <label className="block text-sm font-medium text-gray-700">
                     Total
                   </label>
                   <div className="mt-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm">
-                    {(() => {
-                      const subtotal = item.quantity * item.unit_price;
-                      const tax = (subtotal * (item.tax_rate || 0)) / 100;
-                      return (subtotal + tax).toFixed(2);
-                    })()}
+                    {(item.quantity * item.unit_price).toFixed(2)}
                   </div>
                 </div>
 
@@ -345,27 +309,17 @@ export const InvoiceCreatePage: React.FC = () => {
               <div className="text-right space-y-2 min-w-[250px]">
                 {(() => {
                   const subtotal = items.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
-                  const totalTax = items.reduce((sum, item) => {
-                    const itemSubtotal = item.quantity * item.unit_price;
-                    return sum + (itemSubtotal * (item.tax_rate || 0)) / 100;
-                  }, 0);
-                  const total = subtotal + totalTax;
+                  const total = subtotal;
 
                   return (
                     <>
                       <div className="flex justify-between text-sm text-gray-600">
                         <span>Subtotal:</span>
-                        <span>{formatCurrencyWithSymbol(subtotal, currency || 'USD')}</span>
+                        <span>{formatCurrencyWithSymbol(subtotal, currency || 'NGN')}</span>
                       </div>
-                      {totalTax > 0 && (
-                        <div className="flex justify-between text-sm text-gray-600">
-                          <span>Tax:</span>
-                          <span>{formatCurrencyWithSymbol(totalTax, currency || 'USD')}</span>
-                        </div>
-                      )}
                       <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t">
                         <span>Total:</span>
-                        <span>{formatCurrencyWithSymbol(total, currency || 'USD')}</span>
+                        <span>{formatCurrencyWithSymbol(total, currency || 'NGN')}</span>
                       </div>
                     </>
                   );
