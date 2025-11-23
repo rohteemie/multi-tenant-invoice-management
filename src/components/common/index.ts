@@ -6,3 +6,4 @@ export * from './FeatureNotAvailable';
 export * from './FeatureHelp';
 export * from './CurrencySelector';
 export * from './TaxRateInput';
+export * from './LogoUpload';

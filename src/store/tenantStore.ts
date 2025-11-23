@@ -13,6 +13,8 @@ interface TenantState {
   fetchTenantById: (id: string) => Promise<void>;
   updateTenant: (id: string, data: Partial<TenantCreate>) => Promise<Tenant>;
   deleteTenant: (id: string) => Promise<void>;
+  uploadLogo: (tenantId: string, file: File) => Promise<string>;
+  deleteLogo: (tenantId: string) => Promise<void>;
   setError: (error: string | null) => void;
 }
 
@@ -69,6 +71,43 @@ export const useTenantStore = create<TenantState>((set) => ({
       await tenantService.delete(id);
       set((state) => ({
         tenants: state.tenants.filter((t) => t.id !== id),
+        isLoading: false,
+      }));
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
+      set({ error: errorMessage, isLoading: false });
+      throw error;
+    }
+  },
+
+  uploadLogo: async (tenantId: string, file: File) => {
+    set({ isLoading: true, error: null });
+    try {
+      const result = await tenantService.uploadLogo(tenantId, file);
+      // Refresh tenant to get updated logo_url
+      const tenant = await tenantService.getById(tenantId);
+      set((state) => ({
+        tenants: state.tenants.map((t) => (t.id === tenantId ? tenant : t)),
+        currentTenant: tenant,
+        isLoading: false,
+      }));
+      return result.logo_url;
+    } catch (error: unknown) {
+      const errorMessage = getErrorMessage(error);
+      set({ error: errorMessage, isLoading: false });
+      throw error;
+    }
+  },
+
+  deleteLogo: async (tenantId: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      await tenantService.deleteLogo(tenantId);
+      // Refresh tenant to get updated logo_url (should be null)
+      const tenant = await tenantService.getById(tenantId);
+      set((state) => ({
+        tenants: state.tenants.map((t) => (t.id === tenantId ? tenant : t)),
+        currentTenant: tenant,
         isLoading: false,
       }));
     } catch (error: unknown) {
