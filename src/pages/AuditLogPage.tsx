@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { useAuthStore } from '../store';
-import { UserRole } from '../types';
+import { UserRole, AuditAction, ResourceType } from '../types';
 import { Loading, ErrorMessage, Button } from '../components/common';
 import {
   getAuditLogs,
   type GetAuditLogsParams,
 } from '../services';
-import type { AuditLog, AuditAction, ResourceType } from '../types';
+import type { AuditLog } from '../types';
 
 export const AuditLogPage: React.FC = () => {
   const { user: currentUser } = useAuthStore();
@@ -38,7 +38,7 @@ export const AuditLogPage: React.FC = () => {
     }
     
     loadAuditLogs();
-  }, [currentPage, filterAction, filterResourceType, filterStatus, filterUserId, filterStartDate, filterEndDate]);
+  }, [canViewAuditLogs, currentPage, filterAction, filterResourceType, filterStatus, filterUserId, filterStartDate, filterEndDate]);
 
   const loadAuditLogs = async () => {
     try {
@@ -67,11 +67,21 @@ export const AuditLogPage: React.FC = () => {
       }
       
       if (filterStartDate) {
-        params.start_date = new Date(filterStartDate).toISOString();
+        try {
+          params.start_date = new Date(filterStartDate).toISOString();
+        } catch {
+          setError('Invalid start date format');
+          return;
+        }
       }
       
       if (filterEndDate) {
-        params.end_date = new Date(filterEndDate).toISOString();
+        try {
+          params.end_date = new Date(filterEndDate).toISOString();
+        } catch {
+          setError('Invalid end date format');
+          return;
+        }
       }
       
       const logs = await getAuditLogs(params);
@@ -144,17 +154,17 @@ export const AuditLogPage: React.FC = () => {
               className="input-field"
             >
               <option value="">All Actions</option>
-              <option value="login">Login</option>
-              <option value="logout">Logout</option>
-              <option value="login_failed">Login Failed</option>
-              <option value="user_created">User Created</option>
-              <option value="user_updated">User Updated</option>
-              <option value="user_deleted">User Deleted</option>
-              <option value="invoice_created">Invoice Created</option>
-              <option value="invoice_updated">Invoice Updated</option>
-              <option value="invoice_deleted">Invoice Deleted</option>
-              <option value="invoice_status_changed">Invoice Status Changed</option>
-              <option value="data_exported">Data Exported</option>
+              <option value={AuditAction.LOGIN}>Login</option>
+              <option value={AuditAction.LOGOUT}>Logout</option>
+              <option value={AuditAction.LOGIN_FAILED}>Login Failed</option>
+              <option value={AuditAction.USER_CREATED}>User Created</option>
+              <option value={AuditAction.USER_UPDATED}>User Updated</option>
+              <option value={AuditAction.USER_DELETED}>User Deleted</option>
+              <option value={AuditAction.INVOICE_CREATED}>Invoice Created</option>
+              <option value={AuditAction.INVOICE_UPDATED}>Invoice Updated</option>
+              <option value={AuditAction.INVOICE_DELETED}>Invoice Deleted</option>
+              <option value={AuditAction.INVOICE_STATUS_CHANGED}>Invoice Status Changed</option>
+              <option value={AuditAction.DATA_EXPORTED}>Data Exported</option>
             </select>
           </div>
           
@@ -169,11 +179,11 @@ export const AuditLogPage: React.FC = () => {
               className="input-field"
             >
               <option value="">All Resources</option>
-              <option value="user">User</option>
-              <option value="tenant">Tenant</option>
-              <option value="invoice">Invoice</option>
-              <option value="auth">Authentication</option>
-              <option value="export">Export</option>
+              <option value={ResourceType.USER}>User</option>
+              <option value={ResourceType.TENANT}>Tenant</option>
+              <option value={ResourceType.INVOICE}>Invoice</option>
+              <option value={ResourceType.AUTH}>Authentication</option>
+              <option value={ResourceType.EXPORT}>Export</option>
             </select>
           </div>
           

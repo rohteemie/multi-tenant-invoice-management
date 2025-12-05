@@ -56,7 +56,7 @@ export interface AuditLog {
   resource_id: string | null;
   ip_address: string | null;
   user_agent: string | null;
-  changes: string | null; // JSON string containing before/after state
+  changes: string | null; // JSON string with structure: { "before": {...}, "after": {...} }
   description: string | null;
   status: string; // 'success' | 'failure'
   created_at: string;
