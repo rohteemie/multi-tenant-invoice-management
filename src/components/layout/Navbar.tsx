@@ -20,6 +20,11 @@ export const Navbar: React.FC = () => {
     { path: '/users', label: 'Users' },
   ];
 
+  // Add audit logs for Admin and Owner roles
+  if (user?.role === UserRole.OWNER || user?.role === UserRole.ADMIN) {
+    navItems.push({ path: '/audit-logs', label: 'Audit Logs' });
+  }
+
   // Add settings to nav items if user is owner
   if (user?.role === UserRole.OWNER) {
     navItems.push({ path: '/settings', label: 'Settings' });

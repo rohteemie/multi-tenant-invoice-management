@@ -18,6 +18,7 @@ import {
   ReportsPage,
   CustomersPage,
   ProductsPage,
+  AuditLogPage,
 } from './pages';
 
 function App() {
@@ -46,6 +47,7 @@ function App() {
           <Route path="users" element={<UsersPage />} />
           <Route path="users/create" element={<UserCreatePage />} />
           <Route path="users/:id" element={<UserDetailPage />} />
+          <Route path="audit-logs" element={<AuditLogPage />} />
           <Route path="settings" element={<TenantSettingsPage />} />
           <Route path="reports" element={<ReportsPage />} />
           <Route path="customers" element={<CustomersPage />} />

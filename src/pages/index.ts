@@ -14,3 +14,4 @@ export * from './TenantSettingsPage';
 export * from './ReportsPage';
 export * from './CustomersPage';
 export * from './ProductsPage';
+export * from './AuditLogPage';
