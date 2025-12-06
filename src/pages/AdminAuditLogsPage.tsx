@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { adminService } from '../services';
 import type { AuditLog } from '../types/auditLog';
 import { Loading, ErrorMessage } from '../components/common';
+import { sanitizeAction } from '../utils/sanitization';
 
 /**
  * Super Admin Platform Audit Logs Page
@@ -22,7 +23,8 @@ export const AdminAuditLogsPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const params = actionFilter ? { action: actionFilter } : {};
+      const sanitizedAction = actionFilter ? sanitizeAction(actionFilter) : '';
+      const params = sanitizedAction ? { action: sanitizedAction } : {};
       const data = await adminService.listAuditLogs(params);
       setLogs(data);
     } catch (err) {
