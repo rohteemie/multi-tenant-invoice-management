@@ -15,6 +15,17 @@ export const Navbar: React.FC = () => {
   };
 
   const navItems = useMemo(() => {
+    // Super Admin has different navigation
+    if (user?.is_superadmin) {
+      return [
+        { path: '/admin/dashboard', label: 'Admin Dashboard' },
+        { path: '/admin/tenants', label: 'Tenants' },
+        { path: '/admin/users', label: 'All Users' },
+        { path: '/admin/audit-logs', label: 'Audit Logs' },
+      ];
+    }
+
+    // Regular user navigation
     const items = [
       { path: '/dashboard', label: 'Dashboard' },
       { path: '/invoices', label: 'Invoices' },
@@ -32,7 +43,7 @@ export const Navbar: React.FC = () => {
     }
 
     return items;
-  }, [user?.role]);
+  }, [user?.role, user?.is_superadmin]);
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 
@@ -65,7 +76,7 @@ export const Navbar: React.FC = () => {
           <div className="hidden sm:flex sm:items-center">
             <div className="flex-shrink-0">
               <span className="text-sm text-gray-700 mr-4">
-                {user?.full_name} ({user?.role})
+                {user?.full_name} ({user?.is_superadmin ? 'Super Admin' : user?.role})
               </span>
               <button
                 onClick={handleLogout}
@@ -122,7 +133,9 @@ export const Navbar: React.FC = () => {
               </div>
             </div>
             <div className="mt-1 px-4">
-              <span className="text-sm text-gray-500">{user?.role}</span>
+              <span className="text-sm text-gray-500">
+                {user?.is_superadmin ? 'Super Admin' : user?.role}
+              </span>
             </div>
             <div className="mt-3 px-4">
               <button

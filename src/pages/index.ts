@@ -15,3 +15,7 @@ export * from './ReportsPage';
 export * from './CustomersPage';
 export * from './ProductsPage';
 export * from './AuditLogPage';
+export * from './SuperAdminDashboardPage';
+export * from './AdminTenantsPage';
+export * from './AdminUsersPage';
+export * from './AdminAuditLogsPage';

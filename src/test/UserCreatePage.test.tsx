@@ -36,6 +36,7 @@ const createTestUser = (role: UserRole): User => ({
   tenant_id: 'tenant-1',
   is_active: true,
   is_verified: true,
+  is_superadmin: false,
   currency_preference: 'NGN',
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
