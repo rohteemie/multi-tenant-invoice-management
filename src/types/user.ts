@@ -12,9 +12,10 @@ export interface User {
   email: string;
   full_name: string;
   role: UserRole;
-  tenant_id: string;
+  tenant_id: string | null; // Nullable for Super Admin users
   is_active: boolean;
   is_verified: boolean;
+  is_superadmin: boolean; // Platform-level super admin flag
   currency_preference: string; // User's preferred currency (NGN, USD, GBP, EUR) - cannot be changed once set
   created_at: string;
   updated_at: string;
@@ -25,8 +26,9 @@ export interface UserCreate {
   full_name: string;
   password: string;
   role: UserRole;
-  tenant_id: string;
+  tenant_id: string | null; // Nullable for Super Admin users
   currency_preference?: string; // Optional on create, defaults to NGN
+  is_superadmin?: boolean; // Platform-level super admin flag
 }
 
 export interface UserUpdate {

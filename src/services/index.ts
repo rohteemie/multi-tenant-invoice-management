@@ -5,3 +5,4 @@ export * from './userService';
 export * from './invoiceService';
 export * from './analyticsService';
 export * from './auditLogService';
+export * from './adminService';

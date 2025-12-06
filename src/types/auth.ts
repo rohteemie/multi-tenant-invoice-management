@@ -11,8 +11,9 @@ export interface LoginCredentials {
 
 export interface TokenPayload {
   sub: string;
-  tenant_id: string;
+  tenant_id: string | null; // Nullable for Super Admin
   role: string;
+  is_superadmin?: boolean; // Platform-level super admin flag
   exp?: number;
 }
 

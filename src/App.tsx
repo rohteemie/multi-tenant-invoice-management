@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ProtectedRoute, DashboardLayout } from './components/layout';
+import { ProtectedRoute, DashboardLayout, SuperAdminRoute } from './components/layout';
 import { InstallPWA } from './components/pwa';
 import {
   LoginPage,
@@ -19,6 +19,10 @@ import {
   CustomersPage,
   ProductsPage,
   AuditLogPage,
+  SuperAdminDashboardPage,
+  AdminTenantsPage,
+  AdminUsersPage,
+  AdminAuditLogsPage,
 } from './pages';
 
 function App() {
@@ -52,6 +56,12 @@ function App() {
           <Route path="reports" element={<ReportsPage />} />
           <Route path="customers" element={<CustomersPage />} />
           <Route path="products" element={<ProductsPage />} />
+          
+          {/* Super Admin Routes */}
+          <Route path="admin/dashboard" element={<SuperAdminRoute><SuperAdminDashboardPage /></SuperAdminRoute>} />
+          <Route path="admin/tenants" element={<SuperAdminRoute><AdminTenantsPage /></SuperAdminRoute>} />
+          <Route path="admin/users" element={<SuperAdminRoute><AdminUsersPage /></SuperAdminRoute>} />
+          <Route path="admin/audit-logs" element={<SuperAdminRoute><AdminAuditLogsPage /></SuperAdminRoute>} />
         </Route>
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
