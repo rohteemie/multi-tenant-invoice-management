@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store';
 import { UserRole } from '../../types';
@@ -14,21 +14,25 @@ export const Navbar: React.FC = () => {
     navigate('/login');
   };
 
-  const navItems = [
-    { path: '/dashboard', label: 'Dashboard' },
-    { path: '/invoices', label: 'Invoices' },
-    { path: '/users', label: 'Users' },
-  ];
+  const navItems = useMemo(() => {
+    const items = [
+      { path: '/dashboard', label: 'Dashboard' },
+      { path: '/invoices', label: 'Invoices' },
+      { path: '/users', label: 'Users' },
+    ];
 
-  // Add audit logs for Admin and Owner roles
-  if (user?.role === UserRole.OWNER || user?.role === UserRole.ADMIN) {
-    navItems.push({ path: '/audit-logs', label: 'Audit Logs' });
-  }
+    // Add audit logs for Admin and Owner roles
+    if (user?.role === UserRole.OWNER || user?.role === UserRole.ADMIN) {
+      items.push({ path: '/audit-logs', label: 'Audit Logs' });
+    }
 
-  // Add settings to nav items if user is owner
-  if (user?.role === UserRole.OWNER) {
-    navItems.push({ path: '/settings', label: 'Settings' });
-  }
+    // Add settings to nav items if user is owner
+    if (user?.role === UserRole.OWNER) {
+      items.push({ path: '/settings', label: 'Settings' });
+    }
+
+    return items;
+  }, [user?.role]);
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { format } from 'date-fns';
 import { useAuthStore } from '../store';
 import { UserRole, AuditAction, ResourceType } from '../types';
@@ -30,17 +30,7 @@ export const AuditLogPage: React.FC = () => {
   // Check if current user can view audit logs (Admin or Owner only)
   const canViewAuditLogs = currentUser?.role === UserRole.OWNER || currentUser?.role === UserRole.ADMIN;
 
-  useEffect(() => {
-    if (!canViewAuditLogs) {
-      setError('You do not have permission to view audit logs. Only Admins and Owners can access this page.');
-      setIsLoading(false);
-      return;
-    }
-    
-    loadAuditLogs();
-  }, [canViewAuditLogs, currentPage, filterAction, filterResourceType, filterStatus, filterUserId, filterStartDate, filterEndDate]);
-
-  const loadAuditLogs = async () => {
+  const loadAuditLogs = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -91,7 +81,17 @@ export const AuditLogPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentPage, itemsPerPage, filterAction, filterResourceType, filterStatus, filterUserId, filterStartDate, filterEndDate]);
+
+  useEffect(() => {
+    if (!canViewAuditLogs) {
+      setError('You do not have permission to view audit logs. Only Admins and Owners can access this page.');
+      setIsLoading(false);
+      return;
+    }
+    
+    loadAuditLogs();
+  }, [canViewAuditLogs, loadAuditLogs]);
 
   const handleClearFilters = () => {
     setFilterAction('');
