@@ -6,19 +6,26 @@
 /**
  * Sanitize string input by escaping HTML special characters
  * Prevents XSS attacks by converting potentially dangerous characters to HTML entities
+ * Uses proper replacement order to avoid double-encoding
  */
 export function sanitizeString(input: string): string {
   if (typeof input !== 'string') {
     return '';
   }
 
-  return input
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-    .replace(/\//g, '&#x2F;');
+  // Use a map for consistent and correct replacement
+  // This approach avoids double-encoding issues
+  const htmlEscapeMap: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#x27;',
+    '/': '&#x2F;',
+  };
+
+  // Replace all special characters in a single pass using regex
+  return input.replace(/[&<>"'/]/g, (char) => htmlEscapeMap[char] || char);
 }
 
 /**
@@ -65,15 +72,8 @@ export function sanitizeQuery(query: string): string {
     return '';
   }
 
-  // First escape HTML to prevent any tag injection
-  let sanitized = sanitizeString(query);
-  
-  // Remove any remaining script-like patterns after HTML escaping
-  // This is a defense-in-depth measure
-  sanitized = sanitized.replace(/script/gi, '');
-  sanitized = sanitized.replace(/javascript:/gi, '');
-  sanitized = sanitized.replace(/data:/gi, '');
-  sanitized = sanitized.replace(/vbscript:/gi, '');
+  // HTML escaping is the primary defense - sufficient for XSS prevention
+  const sanitized = sanitizeString(query);
   
   // Trim and limit length
   return sanitized.trim().substring(0, 1000);

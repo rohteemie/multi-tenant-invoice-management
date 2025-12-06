@@ -30,7 +30,16 @@ export const adminService = {
     limit?: number;
     is_active?: boolean;
   }): Promise<Tenant[]> {
-    const sanitizedParams: Record<string, unknown> = {};
+    interface SanitizedParams {
+      skip: number;
+      limit: number;
+      is_active?: boolean;
+    }
+    
+    const sanitizedParams: SanitizedParams = {
+      skip: 0,
+      limit: 100,
+    };
     
     if (params) {
       const { skip, limit } = validatePagination(params.skip, params.limit);
@@ -99,7 +108,18 @@ export const adminService = {
     is_active?: boolean;
     is_superadmin?: boolean;
   }): Promise<User[]> {
-    const sanitizedParams: Record<string, unknown> = {};
+    interface SanitizedParams {
+      skip: number;
+      limit: number;
+      tenant_id?: string;
+      is_active?: boolean;
+      is_superadmin?: boolean;
+    }
+    
+    const sanitizedParams: SanitizedParams = {
+      skip: 0,
+      limit: 100,
+    };
     
     if (params) {
       const { skip, limit } = validatePagination(params.skip, params.limit);
@@ -136,7 +156,18 @@ export const adminService = {
     user_id?: string;
     action?: string;
   }): Promise<AuditLog[]> {
-    const sanitizedParams: Record<string, unknown> = {};
+    interface SanitizedParams {
+      skip: number;
+      limit: number;
+      tenant_id?: string;
+      user_id?: string;
+      action?: string;
+    }
+    
+    const sanitizedParams: SanitizedParams = {
+      skip: 0,
+      limit: 100,
+    };
     
     if (params) {
       const { skip, limit } = validatePagination(params.skip, params.limit);

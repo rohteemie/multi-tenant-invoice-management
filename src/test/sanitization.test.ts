@@ -83,13 +83,14 @@ describe('Sanitization Utilities', () => {
   });
 
   describe('sanitizeQuery', () => {
-    it('should escape HTML and remove script keyword', () => {
+    it('should escape HTML tags completely', () => {
       const input = 'search<script>alert("xss")</script>term';
       const result = sanitizeQuery(input);
-      // After HTML escaping and script removal
-      expect(result).not.toContain('script'); // script keyword removed
+      // After HTML escaping, tags are converted to entities (safe for display)
       expect(result).not.toContain('<'); // < escaped to &lt;
       expect(result).not.toContain('>'); // > escaped to &gt;
+      expect(result).toContain('&lt;'); // Contains escaped <
+      expect(result).toContain('&gt;'); // Contains escaped >
     });
 
     it('should escape and neutralize event handlers', () => {

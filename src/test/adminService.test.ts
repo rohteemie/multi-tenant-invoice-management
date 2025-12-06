@@ -36,7 +36,10 @@ describe('Admin Service', () => {
 
       const result = await adminService.listTenants();
 
-      expect(apiClient.get).toHaveBeenCalledWith('/admin/tenants', { params: {} });
+      // Now includes default pagination values
+      expect(apiClient.get).toHaveBeenCalledWith('/admin/tenants', {
+        params: { skip: 0, limit: 100 },
+      });
       expect(result).toEqual(mockTenants);
     });
 
@@ -174,7 +177,10 @@ describe('Admin Service', () => {
 
       const result = await adminService.listUsers();
 
-      expect(apiClient.get).toHaveBeenCalledWith('/admin/users', { params: {} });
+      // Now includes default pagination values
+      expect(apiClient.get).toHaveBeenCalledWith('/admin/users', {
+        params: { skip: 0, limit: 100 },
+      });
       expect(result).toEqual(mockUsers);
     });
 
@@ -228,7 +234,10 @@ describe('Admin Service', () => {
 
       const result = await adminService.listAuditLogs();
 
-      expect(apiClient.get).toHaveBeenCalledWith('/admin/audit-logs', { params: {} });
+      // Now includes default pagination values
+      expect(apiClient.get).toHaveBeenCalledWith('/admin/audit-logs', {
+        params: { skip: 0, limit: 100 },
+      });
       expect(result).toEqual(mockLogs);
     });
 
