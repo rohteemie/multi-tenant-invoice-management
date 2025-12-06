@@ -83,17 +83,21 @@ describe('Sanitization Utilities', () => {
   });
 
   describe('sanitizeQuery', () => {
-    it('should remove script tags', () => {
+    it('should escape HTML and remove script keyword', () => {
       const input = 'search<script>alert("xss")</script>term';
       const result = sanitizeQuery(input);
-      expect(result).not.toContain('<script>');
-      expect(result).not.toContain('</script>');
+      // After HTML escaping and script removal
+      expect(result).not.toContain('script'); // script keyword removed
+      expect(result).not.toContain('<'); // < escaped to &lt;
+      expect(result).not.toContain('>'); // > escaped to &gt;
     });
 
-    it('should remove event handlers', () => {
+    it('should escape and neutralize event handlers', () => {
       const input = '<div onclick="alert(\'xss\')">Click me</div>';
       const result = sanitizeQuery(input);
-      expect(result).not.toContain('onclick=');
+      // After HTML escaping, onclick attribute is escaped and harmless
+      expect(result).toContain('&lt;'); // Escaped <
+      expect(result).toContain('&gt;'); // Escaped >
     });
 
     it('should trim whitespace', () => {
@@ -111,14 +115,15 @@ describe('Sanitization Utilities', () => {
   });
 
   describe('sanitizeAction', () => {
-    it('should allow letters, underscores, and hyphens', () => {
+    it('should allow letters, numbers, underscores, and hyphens', () => {
       expect(sanitizeAction('user_created')).toBe('user_created');
       expect(sanitizeAction('tenant-updated')).toBe('tenant-updated');
       expect(sanitizeAction('INVOICE_DELETED')).toBe('INVOICE_DELETED');
+      expect(sanitizeAction('action_v2_123')).toBe('action_v2_123');
     });
 
-    it('should remove numbers and special characters', () => {
-      expect(sanitizeAction('user_created_123')).toBe('user_created_');
+    it('should remove special characters but keep numbers', () => {
+      expect(sanitizeAction('user_created_123')).toBe('user_created_123');
       expect(sanitizeAction('action@#$%')).toBe('action');
     });
 

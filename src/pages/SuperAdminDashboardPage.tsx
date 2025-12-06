@@ -34,14 +34,14 @@ export const SuperAdminDashboardPage: React.FC = () => {
   if (error) return <ErrorMessage message={error} />;
   if (!stats) return null;
 
-  const statCards = [
+      const statCards = [
     {
       title: 'Total Tenants',
       value: stats.total_tenants,
       description: `${stats.active_tenants} active, ${stats.suspended_tenants} suspended`,
       link: '/admin/tenants',
       linkText: 'Manage Tenants',
-      color: 'blue',
+      colorClass: 'text-blue-600 hover:text-blue-500',
     },
     {
       title: 'Total Users',
@@ -49,7 +49,7 @@ export const SuperAdminDashboardPage: React.FC = () => {
       description: `${stats.active_users} active, ${stats.inactive_users} inactive`,
       link: '/admin/users',
       linkText: 'View All Users',
-      color: 'green',
+      colorClass: 'text-green-600 hover:text-green-500',
     },
     {
       title: 'Super Admins',
@@ -57,7 +57,7 @@ export const SuperAdminDashboardPage: React.FC = () => {
       description: 'Platform administrators',
       link: '/admin/users?is_superadmin=true',
       linkText: 'View Super Admins',
-      color: 'purple',
+      colorClass: 'text-purple-600 hover:text-purple-500',
     },
   ];
 
@@ -94,7 +94,7 @@ export const SuperAdminDashboardPage: React.FC = () => {
               <div className="mt-4">
                 <Link
                   to={card.link}
-                  className={`text-sm font-medium text-${card.color}-600 hover:text-${card.color}-500`}
+                  className={`text-sm font-medium ${card.colorClass}`}
                 >
                   {card.linkText} &rarr;
                 </Link>

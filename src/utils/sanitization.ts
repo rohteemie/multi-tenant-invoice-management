@@ -65,11 +65,15 @@ export function sanitizeQuery(query: string): string {
     return '';
   }
 
-  // Remove script tags and other potentially dangerous content
-  let sanitized = query.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  // First escape HTML to prevent any tag injection
+  let sanitized = sanitizeString(query);
   
-  // Remove event handlers
-  sanitized = sanitized.replace(/on\w+\s*=\s*["'][^"']*["']/gi, '');
+  // Remove any remaining script-like patterns after HTML escaping
+  // This is a defense-in-depth measure
+  sanitized = sanitized.replace(/script/gi, '');
+  sanitized = sanitized.replace(/javascript:/gi, '');
+  sanitized = sanitized.replace(/data:/gi, '');
+  sanitized = sanitized.replace(/vbscript:/gi, '');
   
   // Trim and limit length
   return sanitized.trim().substring(0, 1000);
@@ -77,15 +81,15 @@ export function sanitizeQuery(query: string): string {
 
 /**
  * Validate and sanitize action filter for audit logs
- * Only allows specific action formats
+ * Only allows specific action formats: letters, numbers, underscores, and hyphens
  */
 export function sanitizeAction(action: string): string {
   if (typeof action !== 'string') {
     return '';
   }
 
-  // Only allow letters, underscores, and hyphens (common in action names)
-  return action.replace(/[^a-zA-Z_-]/g, '').trim();
+  // Allow letters, numbers, underscores, and hyphens (common in action names)
+  return action.replace(/[^a-zA-Z0-9_-]/g, '').trim();
 }
 
 /**
