@@ -19,8 +19,14 @@ export const invoiceService = {
     skip?: number;
     limit?: number;
   }): Promise<Invoice[]> {
-    const response = await apiClient.get<Invoice[]>('/invoices/', { params });
-    return response.data;
+    const response = await apiClient.get<Invoice[] | { items?: Invoice[]; data?: Invoice[]; invoices?: Invoice[] }>('/invoices/', { params });
+    // Handle both array response and paginated response formats
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+    // Handle paginated response with various field names
+    const data = response.data as { items?: Invoice[]; data?: Invoice[]; invoices?: Invoice[] };
+    return data.items || data.data || data.invoices || [];
   },
 
   async getById(id: string): Promise<Invoice> {

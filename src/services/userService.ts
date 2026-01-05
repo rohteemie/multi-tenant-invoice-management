@@ -8,8 +8,14 @@ export const userService = {
   },
 
   async getAll(): Promise<User[]> {
-    const response = await apiClient.get<User[]>('/users');
-    return response.data;
+    const response = await apiClient.get<User[] | { items?: User[]; data?: User[]; users?: User[] }>('/users');
+    // Handle both array response and paginated response formats
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+    // Handle paginated response with various field names
+    const data = response.data as { items?: User[]; data?: User[]; users?: User[] };
+    return data.items || data.data || data.users || [];
   },
 
   async getById(id: string): Promise<User> {
