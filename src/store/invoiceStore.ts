@@ -6,7 +6,12 @@ import { invoiceService } from '../services';
 interface InvoiceQueryParams {
   status?: string;
   customer_name?: string;
+  invoice_number?: string;
   branch_id?: string;
+  start_date?: string;
+  end_date?: string;
+  min_amount?: number;
+  max_amount?: number;
   skip?: number;
   limit?: number;
 }
@@ -14,7 +19,12 @@ interface InvoiceQueryParams {
 interface InvoiceExportParams {
   status?: string;
   customer_name?: string;
+  invoice_number?: string;
   branch_id?: string;
+  start_date?: string;
+  end_date?: string;
+  min_amount?: number;
+  max_amount?: number;
 }
 
 interface InvoiceState {

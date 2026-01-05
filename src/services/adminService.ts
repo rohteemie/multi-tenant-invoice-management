@@ -51,8 +51,21 @@ export const adminService = {
       }
     }
 
-    const response = await apiClient.get<Tenant[]>('/admin/tenants', { params: sanitizedParams });
-    return response.data;
+    const response = await apiClient.get<Tenant[] | { items?: Tenant[]; data?: Tenant[]; tenants?: Tenant[] }>('/admin/tenants', { params: sanitizedParams });
+    // Handle both array response and paginated response formats
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+    // Handle paginated response with various field names
+    const data = response.data as { items?: Tenant[]; data?: Tenant[]; tenants?: Tenant[] };
+    const items = data.items ?? data.data ?? data.tenants;
+    if (!items) {
+      console.warn('adminService.listTenants: unexpected response format from /admin/tenants, returning empty array.', {
+        responseData: response.data,
+      });
+      return [];
+    }
+    return items;
   },
 
   /**
@@ -142,8 +155,19 @@ export const adminService = {
       }
     }
 
-    const response = await apiClient.get<User[]>('/admin/users', { params: sanitizedParams });
-    return response.data;
+    const response = await apiClient.get<User[] | { items?: User[]; data?: User[]; users?: User[] }>('/admin/users', { params: sanitizedParams });
+    // Handle both array response and paginated response formats
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+    // Handle paginated response with various field names and validate shape
+    const data = response.data as { items?: User[]; data?: User[]; users?: User[] } | null | undefined;
+    const users = data?.items ?? data?.data ?? data?.users;
+    if (!users) {
+      console.error('Unexpected response format from /admin/users: missing items, data, or users array', response.data);
+      throw new Error('Unexpected response format from /admin/users: missing items, data, or users array');
+    }
+    return users;
   },
 
   /**
@@ -196,8 +220,29 @@ export const adminService = {
       }
     }
 
-    const response = await apiClient.get<AuditLog[]>('/admin/audit-logs', { params: sanitizedParams });
-    return response.data;
+    const response = await apiClient.get<AuditLog[] | { items?: AuditLog[]; data?: AuditLog[]; audit_logs?: AuditLog[] }>('/admin/audit-logs', { params: sanitizedParams });
+    // Handle both array response and paginated response formats
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+    // For non-array responses, validate the shape before treating it as paginated data
+    if (!response.data || typeof response.data !== 'object') {
+      console.warn('adminService.listAuditLogs: Unexpected non-object response data received from /admin/audit-logs', {
+        type: typeof response.data,
+        value: response.data,
+      });
+      return [];
+    }
+    // Handle paginated response with various field names
+    const data = response.data as { items?: AuditLog[]; data?: AuditLog[]; audit_logs?: AuditLog[] };
+    const result = data.items ?? data.data ?? data.audit_logs;
+    if (!result) {
+      console.warn('adminService.listAuditLogs: No items, data, or audit_logs field found in response from /admin/audit-logs', {
+        keys: Object.keys(response.data as object),
+      });
+      return [];
+    }
+    return result;
   },
 
   /**

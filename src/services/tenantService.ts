@@ -8,8 +8,19 @@ export const tenantService = {
   },
 
   async getAll(): Promise<Tenant[]> {
-    const response = await apiClient.get<Tenant[]>('/tenants');
-    return response.data;
+    const response = await apiClient.get<Tenant[] | { items?: Tenant[]; data?: Tenant[]; tenants?: Tenant[] }>('/tenants');
+    // Handle both array response and paginated response formats
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+    // Handle paginated response with various field names
+    const data = response.data as { items?: Tenant[]; data?: Tenant[]; tenants?: Tenant[] };
+    const items = data.items ?? data.data ?? data.tenants;
+    if (!items) {
+      console.error('Unexpected /tenants response format: none of items, data, or tenants present.', response.data);
+      return [];
+    }
+    return items;
   },
 
   async getById(id: string): Promise<Tenant> {

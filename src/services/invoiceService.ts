@@ -10,12 +10,28 @@ export const invoiceService = {
   async getAll(params?: {
     status?: string;
     customer_name?: string;
+    invoice_number?: string;
     branch_id?: string;
+    start_date?: string;
+    end_date?: string;
+    min_amount?: number;
+    max_amount?: number;
     skip?: number;
     limit?: number;
   }): Promise<Invoice[]> {
-    const response = await apiClient.get<Invoice[]>('/invoices/', { params });
-    return response.data;
+    const response = await apiClient.get<Invoice[] | { items?: Invoice[]; data?: Invoice[]; invoices?: Invoice[] }>('/invoices/', { params });
+    // Handle both array response and paginated response formats
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+    // Handle paginated response with various field names
+    const data = response.data as { items?: Invoice[]; data?: Invoice[]; invoices?: Invoice[] };
+    const invoices = data.items ?? data.data ?? data.invoices;
+    if (!invoices) {
+      console.error('Unexpected invoice API response format: expected items, data, or invoices array.', response.data);
+      throw new Error('Unexpected invoice API response format: expected items, data, or invoices array.');
+    }
+    return invoices;
   },
 
   async getById(id: string): Promise<Invoice> {
@@ -45,7 +61,12 @@ export const invoiceService = {
   async exportInvoices(format: 'csv' | 'json', params?: {
     status?: string;
     customer_name?: string;
+    invoice_number?: string;
     branch_id?: string;
+    start_date?: string;
+    end_date?: string;
+    min_amount?: number;
+    max_amount?: number;
   }): Promise<Blob> {
     const response = await apiClient.get(`/invoices/export/invoices`, {
       params: { ...params, format },
