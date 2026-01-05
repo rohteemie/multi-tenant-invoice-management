@@ -144,6 +144,8 @@ export const TenantSettingsPage: React.FC = () => {
     try {
       await updateTenant(currentUser.tenant_id, formData);
       setSuccessMessage('Tenant settings updated successfully');
+      // Reset initialization flag to allow form to refresh with updated values
+      setIsInitialized(false);
     } catch {
       // Error is handled in store
     }
