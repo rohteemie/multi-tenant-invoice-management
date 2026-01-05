@@ -26,7 +26,12 @@ export const invoiceService = {
     }
     // Handle paginated response with various field names
     const data = response.data as { items?: Invoice[]; data?: Invoice[]; invoices?: Invoice[] };
-    return data.items || data.data || data.invoices || [];
+    const invoices = data.items ?? data.data ?? data.invoices;
+    if (!invoices) {
+      console.error('Unexpected invoice API response format: expected items, data, or invoices array.', response.data);
+      throw new Error('Unexpected invoice API response format: expected items, data, or invoices array.');
+    }
+    return invoices;
   },
 
   async getById(id: string): Promise<Invoice> {

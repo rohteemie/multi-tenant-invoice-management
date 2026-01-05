@@ -15,7 +15,12 @@ export const userService = {
     }
     // Handle paginated response with various field names
     const data = response.data as { items?: User[]; data?: User[]; users?: User[] };
-    return data.items || data.data || data.users || [];
+    const users = data.items ?? data.data ?? data.users;
+    if (!users) {
+      console.error('Unexpected users response format: missing items, data, and users fields', response.data);
+      throw new Error('Unexpected users response format: missing items, data, and users fields');
+    }
+    return users;
   },
 
   async getById(id: string): Promise<User> {

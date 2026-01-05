@@ -15,7 +15,12 @@ export const tenantService = {
     }
     // Handle paginated response with various field names
     const data = response.data as { items?: Tenant[]; data?: Tenant[]; tenants?: Tenant[] };
-    return data.items || data.data || data.tenants || [];
+    const items = data.items ?? data.data ?? data.tenants;
+    if (!items) {
+      console.error('Unexpected /tenants response format: none of items, data, or tenants present.', response.data);
+      return [];
+    }
+    return items;
   },
 
   async getById(id: string): Promise<Tenant> {

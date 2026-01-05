@@ -28,7 +28,12 @@ export async function getAuditLogs(params?: GetAuditLogsParams): Promise<AuditLo
   }
   // Handle paginated response with various field names
   const data = response.data as { items?: AuditLog[]; data?: AuditLog[]; audit_logs?: AuditLog[] };
-  return data.items || data.data || data.audit_logs || [];
+  const logs = data.items ?? data.data ?? data.audit_logs;
+  if (!logs) {
+    console.error('Unexpected audit logs response format: missing items, data, and audit_logs fields', response.data);
+    return [];
+  }
+  return logs;
 }
 
 /**
@@ -53,7 +58,12 @@ export async function getUserAuditLogs(
   }
   // Handle paginated response with various field names
   const data = response.data as { items?: AuditLog[]; data?: AuditLog[]; audit_logs?: AuditLog[] };
-  return data.items || data.data || data.audit_logs || [];
+  const logs = data.items ?? data.data ?? data.audit_logs;
+  if (!logs) {
+    console.error('Unexpected user audit logs response format: missing items, data, and audit_logs fields', response.data);
+    return [];
+  }
+  return logs;
 }
 
 /**
@@ -74,5 +84,10 @@ export async function getResourceAuditLogs(
   }
   // Handle paginated response with various field names
   const data = response.data as { items?: AuditLog[]; data?: AuditLog[]; audit_logs?: AuditLog[] };
-  return data.items || data.data || data.audit_logs || [];
+  const logs = data.items ?? data.data ?? data.audit_logs;
+  if (!logs) {
+    console.error('Unexpected resource audit logs response format: missing items, data, and audit_logs fields', response.data);
+    return [];
+  }
+  return logs;
 }

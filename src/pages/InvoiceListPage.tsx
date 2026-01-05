@@ -22,14 +22,39 @@ export const InvoiceListPage: React.FC = () => {
 
   const loadInvoices = async () => {
     try {
+      // Validate amount range
+      const minAmount = minAmountFilter ? Number(minAmountFilter) : undefined;
+      const maxAmount = maxAmountFilter ? Number(maxAmountFilter) : undefined;
+      
+      if (minAmount !== undefined && (minAmount < 0 || !isFinite(minAmount))) {
+        alert('Min amount must be a positive number');
+        return;
+      }
+      
+      if (maxAmount !== undefined && (maxAmount < 0 || !isFinite(maxAmount))) {
+        alert('Max amount must be a positive number');
+        return;
+      }
+      
+      if (minAmount !== undefined && maxAmount !== undefined && minAmount > maxAmount) {
+        alert('Min amount cannot be greater than max amount');
+        return;
+      }
+      
+      // Validate date range
+      if (startDateFilter && endDateFilter && startDateFilter > endDateFilter) {
+        alert('Start date cannot be after end date');
+        return;
+      }
+      
       await fetchInvoices({
         status: statusFilter || undefined,
         customer_name: customerFilter || undefined,
         invoice_number: invoiceNumberFilter || undefined,
         start_date: startDateFilter || undefined,
         end_date: endDateFilter || undefined,
-        min_amount: minAmountFilter ? Number(minAmountFilter) : undefined,
-        max_amount: maxAmountFilter ? Number(maxAmountFilter) : undefined,
+        min_amount: minAmount,
+        max_amount: maxAmount,
       });
     } catch {
       // Error is handled in store
@@ -192,7 +217,15 @@ export const InvoiceListPage: React.FC = () => {
                   id="start-date"
                   type="date"
                   value={startDateFilter ? startDateFilter.split('T')[0] : ''}
-                  onChange={(e) => setStartDateFilter(e.target.value ? new Date(e.target.value).toISOString() : '')}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      // Create date at noon local time to avoid timezone shifting
+                      const date = new Date(e.target.value + 'T12:00:00');
+                      setStartDateFilter(date.toISOString());
+                    } else {
+                      setStartDateFilter('');
+                    }
+                  }}
                   className="mt-1 input-field"
                 />
               </div>
@@ -204,7 +237,15 @@ export const InvoiceListPage: React.FC = () => {
                   id="end-date"
                   type="date"
                   value={endDateFilter ? endDateFilter.split('T')[0] : ''}
-                  onChange={(e) => setEndDateFilter(e.target.value ? new Date(e.target.value).toISOString() : '')}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      // Create date at noon local time to avoid timezone shifting
+                      const date = new Date(e.target.value + 'T12:00:00');
+                      setEndDateFilter(date.toISOString());
+                    } else {
+                      setEndDateFilter('');
+                    }
+                  }}
                   className="mt-1 input-field"
                 />
               </div>
