@@ -21,8 +21,14 @@ export interface GetAuditLogsParams {
  * Get list of audit logs with optional filters
  */
 export async function getAuditLogs(params?: GetAuditLogsParams): Promise<AuditLog[]> {
-  const response = await apiClient.get<AuditLog[]>('/audit-logs/', { params });
-  return response.data;
+  const response = await apiClient.get<AuditLog[] | { items?: AuditLog[]; data?: AuditLog[]; audit_logs?: AuditLog[] }>('/audit-logs/', { params });
+  // Handle both array response and paginated response formats
+  if (Array.isArray(response.data)) {
+    return response.data;
+  }
+  // Handle paginated response with various field names
+  const data = response.data as { items?: AuditLog[]; data?: AuditLog[]; audit_logs?: AuditLog[] };
+  return data.items || data.data || data.audit_logs || [];
 }
 
 /**
@@ -40,8 +46,14 @@ export async function getUserAuditLogs(
   userId: string,
   params?: Omit<GetAuditLogsParams, 'user_id'>
 ): Promise<AuditLog[]> {
-  const response = await apiClient.get<AuditLog[]>(`/audit-logs/user/${userId}`, { params });
-  return response.data;
+  const response = await apiClient.get<AuditLog[] | { items?: AuditLog[]; data?: AuditLog[]; audit_logs?: AuditLog[] }>(`/audit-logs/user/${userId}`, { params });
+  // Handle both array response and paginated response formats
+  if (Array.isArray(response.data)) {
+    return response.data;
+  }
+  // Handle paginated response with various field names
+  const data = response.data as { items?: AuditLog[]; data?: AuditLog[]; audit_logs?: AuditLog[] };
+  return data.items || data.data || data.audit_logs || [];
 }
 
 /**
@@ -52,9 +64,15 @@ export async function getResourceAuditLogs(
   resourceId: string,
   params?: Omit<GetAuditLogsParams, 'resource_type' | 'resource_id'>
 ): Promise<AuditLog[]> {
-  const response = await apiClient.get<AuditLog[]>(
+  const response = await apiClient.get<AuditLog[] | { items?: AuditLog[]; data?: AuditLog[]; audit_logs?: AuditLog[] }>(
     `/audit-logs/resource/${resourceType}/${resourceId}`,
     { params }
   );
-  return response.data;
+  // Handle both array response and paginated response formats
+  if (Array.isArray(response.data)) {
+    return response.data;
+  }
+  // Handle paginated response with various field names
+  const data = response.data as { items?: AuditLog[]; data?: AuditLog[]; audit_logs?: AuditLog[] };
+  return data.items || data.data || data.audit_logs || [];
 }

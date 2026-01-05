@@ -51,8 +51,14 @@ export const adminService = {
       }
     }
 
-    const response = await apiClient.get<Tenant[]>('/admin/tenants', { params: sanitizedParams });
-    return response.data;
+    const response = await apiClient.get<Tenant[] | { items?: Tenant[]; data?: Tenant[]; tenants?: Tenant[] }>('/admin/tenants', { params: sanitizedParams });
+    // Handle both array response and paginated response formats
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+    // Handle paginated response with various field names
+    const data = response.data as { items?: Tenant[]; data?: Tenant[]; tenants?: Tenant[] };
+    return data.items || data.data || data.tenants || [];
   },
 
   /**
@@ -142,8 +148,14 @@ export const adminService = {
       }
     }
 
-    const response = await apiClient.get<User[]>('/admin/users', { params: sanitizedParams });
-    return response.data;
+    const response = await apiClient.get<User[] | { items?: User[]; data?: User[]; users?: User[] }>('/admin/users', { params: sanitizedParams });
+    // Handle both array response and paginated response formats
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+    // Handle paginated response with various field names
+    const data = response.data as { items?: User[]; data?: User[]; users?: User[] };
+    return data.items || data.data || data.users || [];
   },
 
   /**
@@ -196,8 +208,14 @@ export const adminService = {
       }
     }
 
-    const response = await apiClient.get<AuditLog[]>('/admin/audit-logs', { params: sanitizedParams });
-    return response.data;
+    const response = await apiClient.get<AuditLog[] | { items?: AuditLog[]; data?: AuditLog[]; audit_logs?: AuditLog[] }>('/admin/audit-logs', { params: sanitizedParams });
+    // Handle both array response and paginated response formats
+    if (Array.isArray(response.data)) {
+      return response.data;
+    }
+    // Handle paginated response with various field names
+    const data = response.data as { items?: AuditLog[]; data?: AuditLog[]; audit_logs?: AuditLog[] };
+    return data.items || data.data || data.audit_logs || [];
   },
 
   /**
