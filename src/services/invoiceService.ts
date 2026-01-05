@@ -10,7 +10,12 @@ export const invoiceService = {
   async getAll(params?: {
     status?: string;
     customer_name?: string;
+    invoice_number?: string;
     branch_id?: string;
+    start_date?: string;
+    end_date?: string;
+    min_amount?: number;
+    max_amount?: number;
     skip?: number;
     limit?: number;
   }): Promise<Invoice[]> {
@@ -45,7 +50,12 @@ export const invoiceService = {
   async exportInvoices(format: 'csv' | 'json', params?: {
     status?: string;
     customer_name?: string;
+    invoice_number?: string;
     branch_id?: string;
+    start_date?: string;
+    end_date?: string;
+    min_amount?: number;
+    max_amount?: number;
   }): Promise<Blob> {
     const response = await apiClient.get(`/invoices/export/invoices`, {
       params: { ...params, format },
