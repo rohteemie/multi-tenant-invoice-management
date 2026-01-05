@@ -9,6 +9,12 @@ export const InvoiceListPage: React.FC = () => {
   const { invoices, isLoading, error, fetchInvoices, exportInvoices, deleteInvoice } = useInvoiceStore();
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [customerFilter, setCustomerFilter] = useState<string>('');
+  const [invoiceNumberFilter, setInvoiceNumberFilter] = useState<string>('');
+  const [startDateFilter, setStartDateFilter] = useState<string>('');
+  const [endDateFilter, setEndDateFilter] = useState<string>('');
+  const [minAmountFilter, setMinAmountFilter] = useState<string>('');
+  const [maxAmountFilter, setMaxAmountFilter] = useState<string>('');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState<boolean>(false);
 
   useEffect(() => {
     loadInvoices();
@@ -16,7 +22,15 @@ export const InvoiceListPage: React.FC = () => {
 
   const loadInvoices = async () => {
     try {
-      await fetchInvoices({ status: statusFilter || undefined, customer_name: customerFilter || undefined });
+      await fetchInvoices({
+        status: statusFilter || undefined,
+        customer_name: customerFilter || undefined,
+        invoice_number: invoiceNumberFilter || undefined,
+        start_date: startDateFilter || undefined,
+        end_date: endDateFilter || undefined,
+        min_amount: minAmountFilter ? Number(minAmountFilter) : undefined,
+        max_amount: maxAmountFilter ? Number(maxAmountFilter) : undefined,
+      });
     } catch {
       // Error is handled in store
     }
@@ -28,10 +42,28 @@ export const InvoiceListPage: React.FC = () => {
 
   const handleExport = async (format: 'csv' | 'json') => {
     try {
-      await exportInvoices(format, { status: statusFilter || undefined });
+      await exportInvoices(format, {
+        status: statusFilter || undefined,
+        customer_name: customerFilter || undefined,
+        invoice_number: invoiceNumberFilter || undefined,
+        start_date: startDateFilter || undefined,
+        end_date: endDateFilter || undefined,
+        min_amount: minAmountFilter ? Number(minAmountFilter) : undefined,
+        max_amount: maxAmountFilter ? Number(maxAmountFilter) : undefined,
+      });
     } catch {
       // Error is handled in store
     }
+  };
+
+  const handleClearFilters = () => {
+    setStatusFilter('');
+    setCustomerFilter('');
+    setInvoiceNumberFilter('');
+    setStartDateFilter('');
+    setEndDateFilter('');
+    setMinAmountFilter('');
+    setMaxAmountFilter('');
   };
 
   const handleDelete = async (id: string, invoiceNumber: string) => {
@@ -90,40 +122,132 @@ export const InvoiceListPage: React.FC = () => {
 
       {/* Filters */}
       <div className="card">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700">
-              Status
-            </label>
-            <select
-              id="status"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="mt-1 input-field"
+        <div className="space-y-4">
+          {/* Basic Filters */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div>
+              <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+                Status
+              </label>
+              <select
+                id="status"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="mt-1 input-field"
+              >
+                <option value="">All</option>
+                <option value="draft">Draft</option>
+                <option value="sent">Sent</option>
+                <option value="paid">Paid</option>
+                <option value="overdue">Overdue</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="customer" className="block text-sm font-medium text-gray-700">
+                Customer Name
+              </label>
+              <input
+                id="customer"
+                type="text"
+                value={customerFilter}
+                onChange={(e) => setCustomerFilter(e.target.value)}
+                className="mt-1 input-field"
+                placeholder="Search by customer name"
+              />
+            </div>
+            <div>
+              <label htmlFor="invoice-number" className="block text-sm font-medium text-gray-700">
+                Invoice Number
+              </label>
+              <input
+                id="invoice-number"
+                type="text"
+                value={invoiceNumberFilter}
+                onChange={(e) => setInvoiceNumberFilter(e.target.value)}
+                className="mt-1 input-field"
+                placeholder="Search by invoice number"
+              />
+            </div>
+          </div>
+
+          {/* Advanced Filters Toggle */}
+          <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
             >
-              <option value="">All</option>
-              <option value="draft">Draft</option>
-              <option value="sent">Sent</option>
-              <option value="paid">Paid</option>
-              <option value="overdue">Overdue</option>
-            </select>
+              {showAdvancedFilters ? '− Hide' : '+ Show'} Advanced Filters
+            </button>
           </div>
-          <div>
-            <label htmlFor="customer" className="block text-sm font-medium text-gray-700">
-              Customer Name
-            </label>
-            <input
-              id="customer"
-              type="text"
-              value={customerFilter}
-              onChange={(e) => setCustomerFilter(e.target.value)}
-              className="mt-1 input-field"
-              placeholder="Search by customer name"
-            />
-          </div>
-          <div className="flex items-end">
-            <Button onClick={handleFilter} className="w-full">
+
+          {/* Advanced Filters */}
+          {showAdvancedFilters && (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 pt-2">
+              <div>
+                <label htmlFor="start-date" className="block text-sm font-medium text-gray-700">
+                  Start Date
+                </label>
+                <input
+                  id="start-date"
+                  type="date"
+                  value={startDateFilter}
+                  onChange={(e) => setStartDateFilter(e.target.value ? new Date(e.target.value).toISOString() : '')}
+                  className="mt-1 input-field"
+                />
+              </div>
+              <div>
+                <label htmlFor="end-date" className="block text-sm font-medium text-gray-700">
+                  End Date
+                </label>
+                <input
+                  id="end-date"
+                  type="date"
+                  value={endDateFilter}
+                  onChange={(e) => setEndDateFilter(e.target.value ? new Date(e.target.value).toISOString() : '')}
+                  className="mt-1 input-field"
+                />
+              </div>
+              <div>
+                <label htmlFor="min-amount" className="block text-sm font-medium text-gray-700">
+                  Min Amount
+                </label>
+                <input
+                  id="min-amount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={minAmountFilter}
+                  onChange={(e) => setMinAmountFilter(e.target.value)}
+                  className="mt-1 input-field"
+                  placeholder="0.00"
+                />
+              </div>
+              <div>
+                <label htmlFor="max-amount" className="block text-sm font-medium text-gray-700">
+                  Max Amount
+                </label>
+                <input
+                  id="max-amount"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={maxAmountFilter}
+                  onChange={(e) => setMaxAmountFilter(e.target.value)}
+                  className="mt-1 input-field"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-2">
+            <Button onClick={handleFilter} className="flex-1 sm:flex-none">
               Apply Filters
+            </Button>
+            <Button onClick={handleClearFilters} variant="secondary" className="flex-1 sm:flex-none">
+              Clear Filters
             </Button>
           </div>
         </div>
