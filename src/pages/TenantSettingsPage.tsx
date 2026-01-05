@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTenantStore } from '../store';
 import { useAuthStore } from '../store';
 import { Button, ErrorMessage, SuccessMessage, Loading, CurrencySelector, TaxRateInput, LogoUpload } from '../components/common';
+import { TenantBrandingSettings, InvoiceNumberConfig } from '../components/tenant';
 import { UserRole } from '../types';
 import type { TenantCreate, Currency } from '../types';
 
@@ -22,6 +23,13 @@ export const TenantSettingsPage: React.FC = () => {
     address: '',
     phone: '',
     email: '',
+    invoice_number_prefix: '',
+    invoice_number_format: 'INV-{YYYY}-{0000}',
+    invoice_number_sequence: 1,
+    primary_color: '#000000',
+    secondary_color: '#666666',
+    custom_footer: '',
+    draft_watermark_enabled: false,
   });
   
   const [isInitialized, setIsInitialized] = useState(false);
@@ -55,6 +63,13 @@ export const TenantSettingsPage: React.FC = () => {
         address: currentTenant.address || '',
         phone: currentTenant.phone || '',
         email: currentTenant.email || '',
+        invoice_number_prefix: currentTenant.invoice_number_prefix || '',
+        invoice_number_format: currentTenant.invoice_number_format || 'INV-{YYYY}-{0000}',
+        invoice_number_sequence: currentTenant.invoice_number_sequence || 1,
+        primary_color: currentTenant.primary_color || '#000000',
+        secondary_color: currentTenant.secondary_color || '#666666',
+        custom_footer: currentTenant.custom_footer || '',
+        draft_watermark_enabled: currentTenant.draft_watermark_enabled || false,
       });
       setIsInitialized(true);
     }
@@ -103,6 +118,20 @@ export const TenantSettingsPage: React.FC = () => {
     } catch {
       // Error is handled in store
     }
+  };
+
+  const handleBrandingChange = (field: string, value: string | boolean) => {
+    setFormData({
+      ...formData,
+      [field]: value,
+    });
+  };
+
+  const handleInvoiceNumberChange = (field: string, value: string | number) => {
+    setFormData({
+      ...formData,
+      [field]: value,
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -343,6 +372,37 @@ export const TenantSettingsPage: React.FC = () => {
               />
             </div>
           </div>
+        </div>
+
+        {/* PDF Branding Settings */}
+        <div className="card">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">PDF Branding</h3>
+          <p className="text-sm text-gray-500 mb-4">
+            Customize the appearance of your invoice PDFs with colors and footer text
+          </p>
+          <TenantBrandingSettings
+            primaryColor={formData.primary_color}
+            secondaryColor={formData.secondary_color}
+            customFooter={formData.custom_footer}
+            draftWatermarkEnabled={formData.draft_watermark_enabled}
+            onChange={handleBrandingChange}
+            disabled={isLoading}
+          />
+        </div>
+
+        {/* Invoice Number Configuration */}
+        <div className="card">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Invoice Number Configuration</h3>
+          <p className="text-sm text-gray-500 mb-4">
+            Configure how invoice numbers are generated for your organization
+          </p>
+          <InvoiceNumberConfig
+            prefix={formData.invoice_number_prefix}
+            format={formData.invoice_number_format}
+            sequence={formData.invoice_number_sequence}
+            onChange={handleInvoiceNumberChange}
+            disabled={isLoading}
+          />
         </div>
 
         {/* Tenant Status */}
