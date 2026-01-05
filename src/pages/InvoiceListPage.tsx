@@ -191,7 +191,7 @@ export const InvoiceListPage: React.FC = () => {
                 <input
                   id="start-date"
                   type="date"
-                  value={startDateFilter}
+                  value={startDateFilter ? startDateFilter.split('T')[0] : ''}
                   onChange={(e) => setStartDateFilter(e.target.value ? new Date(e.target.value).toISOString() : '')}
                   className="mt-1 input-field"
                 />
@@ -203,7 +203,7 @@ export const InvoiceListPage: React.FC = () => {
                 <input
                   id="end-date"
                   type="date"
-                  value={endDateFilter}
+                  value={endDateFilter ? endDateFilter.split('T')[0] : ''}
                   onChange={(e) => setEndDateFilter(e.target.value ? new Date(e.target.value).toISOString() : '')}
                   className="mt-1 input-field"
                 />
