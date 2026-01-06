@@ -142,7 +142,24 @@ export const TenantSettingsPage: React.FC = () => {
     if (!currentUser?.tenant_id) return;
 
     try {
-      await updateTenant(currentUser.tenant_id, formData);
+      // Clean the form data - remove empty strings and undefined values
+      // Only send fields that have actual values to avoid backend validation errors
+      const cleanedData: Partial<TenantCreate> = {};
+      
+      Object.entries(formData).forEach(([key, value]) => {
+        // Skip empty strings, null, and undefined for optional fields
+        if (value === '' || value === null || value === undefined) {
+          // But always include required fields even if empty
+          if (key === 'name' || key === 'plan_type' || key === 'default_currency') {
+            (cleanedData as any)[key] = value;
+          }
+          return;
+        }
+        // Include all non-empty values
+        (cleanedData as any)[key] = value;
+      });
+
+      await updateTenant(currentUser.tenant_id, cleanedData);
       setSuccessMessage('Tenant settings updated successfully');
       setTimeout(() => setSuccessMessage(null), 3000);
       // Reset initialization flag to allow form to refresh with updated values
