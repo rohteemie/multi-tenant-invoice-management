@@ -18,11 +18,11 @@ export const TenantBrandingSettings: React.FC<TenantBrandingSettingsProps> = ({
   disabled = false,
 }) => {
   const handleColorChange = (field: string, value: string) => {
-    // Validate hex color format
-    if (value && !value.match(/^#[0-9A-Fa-f]{6}$/)) {
-      return; // Only allow valid hex colors
+    // Allow empty string or valid hex color format
+    if (value === '' || value.match(/^#[0-9A-Fa-f]{6}$/)) {
+      onChange(field, value);
     }
-    onChange(field, value);
+    // Silently reject invalid formats (user will see no change)
   };
 
   const handleFooterChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {

@@ -32,7 +32,13 @@ export const InvoiceNumberConfig: React.FC<InvoiceNumberConfigProps> = ({
   };
 
   const handleSequenceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value, 10);
+    const inputValue = e.target.value;
+    // Allow empty string for clearing the field while typing
+    if (inputValue === '') {
+      onChange('invoice_number_sequence', 0);
+      return;
+    }
+    const value = parseInt(inputValue, 10);
     if (!isNaN(value) && value >= 0) {
       onChange('invoice_number_sequence', value);
     }
@@ -43,18 +49,18 @@ export const InvoiceNumberConfig: React.FC<InvoiceNumberConfigProps> = ({
     let preview = format || 'INV-{YYYY}-{0000}';
     const currentDate = new Date();
     
-    // Replace date placeholders
-    preview = preview.replace('{YYYY}', currentDate.getFullYear().toString());
-    preview = preview.replace('{YY}', currentDate.getFullYear().toString().slice(-2));
-    preview = preview.replace('{MM}', String(currentDate.getMonth() + 1).padStart(2, '0'));
-    preview = preview.replace('{DD}', String(currentDate.getDate()).padStart(2, '0'));
+    // Replace date placeholders - using replaceAll to handle duplicate tokens
+    preview = preview.replaceAll('{YYYY}', currentDate.getFullYear().toString());
+    preview = preview.replaceAll('{YY}', currentDate.getFullYear().toString().slice(-2));
+    preview = preview.replaceAll('{MM}', String(currentDate.getMonth() + 1).padStart(2, '0'));
+    preview = preview.replaceAll('{DD}', String(currentDate.getDate()).padStart(2, '0'));
     
     // Replace sequence placeholders
     const seq = sequence || 1;
-    preview = preview.replace('{0000}', String(seq).padStart(4, '0'));
-    preview = preview.replace('{000}', String(seq).padStart(3, '0'));
-    preview = preview.replace('{00}', String(seq).padStart(2, '0'));
-    preview = preview.replace('{0}', String(seq));
+    preview = preview.replaceAll('{0000}', String(seq).padStart(4, '0'));
+    preview = preview.replaceAll('{000}', String(seq).padStart(3, '0'));
+    preview = preview.replaceAll('{00}', String(seq).padStart(2, '0'));
+    preview = preview.replaceAll('{0}', String(seq));
     
     // Add prefix if provided
     if (prefix) {
