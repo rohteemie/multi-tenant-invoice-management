@@ -34,6 +34,7 @@ export const InvoiceNumberConfig: React.FC<InvoiceNumberConfigProps> = ({
   const handleSequenceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
     // Allow empty string for clearing the field while typing
+    // Default to 0 which is a valid starting sequence number
     if (inputValue === '') {
       onChange('invoice_number_sequence', 0);
       return;

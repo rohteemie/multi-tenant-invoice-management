@@ -19,7 +19,7 @@ export const TenantBrandingSettings: React.FC<TenantBrandingSettingsProps> = ({
 }) => {
   const handleColorChange = (field: string, value: string) => {
     // Allow empty string or valid hex color format
-    if (value === '' || value.match(/^#[0-9A-Fa-f]{6}$/)) {
+    if (value === '' || /^#[0-9A-Fa-f]{6}$/.test(value)) {
       onChange(field, value);
     }
     // Silently reject invalid formats (user will see no change)
