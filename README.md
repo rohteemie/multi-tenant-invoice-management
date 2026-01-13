@@ -2,6 +2,8 @@
 
 A modern, feature-rich React-powered multi-tenant SaaS frontend for Invoice Management, built with TypeScript, Vite, and Tailwind CSS.
 
+> **📋 Documentation:** See [FRONTEND_BUGS_AND_IMPROVEMENTS.md](./FRONTEND_BUGS_AND_IMPROVEMENTS.md) for a comprehensive list of known issues, unfinished features, and improvement opportunities. Also see [BUGS_FIXTURES_SUMMARY.md](./BUGS_FIXTURES_SUMMARY.md) for a quick reference guide.
+
 ## 🚀 Features
 
 - **Multi-Tenant Architecture**: Secure tenant isolation with role-based access control
